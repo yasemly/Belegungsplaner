@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Belegungsplaner.iml" filepath="$PROJECT_DIR$/.idea/Belegungsplaner.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RoomBookingAppSwing.iml" filepath="$PROJECT_DIR$/RoomBookingAppSwing.iml" />
     </modules>
   </component>
 </project>
