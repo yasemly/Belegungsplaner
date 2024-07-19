@@ -1,34 +1,32 @@
+package com.room.booking.presentation;
+
+import com.room.booking.dao.BookingDao;
+import com.room.booking.dao.BookingDaoImpl;
 import com.room.booking.dao.RoomDao;
 import com.room.booking.dao.RoomDaoImpl;
 import com.room.booking.model.Room;
 import com.room.booking.model.User;
+import com.room.booking.model.Booking;
+import org.jdatepicker.JDatePicker;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.jdatepicker.impl.JDatePickerImpl;
-import org.jdatepicker.impl.JDatePanelImpl;
-import org.jdatepicker.impl.UtilDateModel;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public class UserSearchFrame extends JFrame {
     private JTextField capacityField;
     private JTextField locationField;
-    private JDatePickerImpl availableFromPicker;
-    private JDatePickerImpl availableToPicker;
-    private JComboBox<String> availableFromTimeComboBox;
-    private JComboBox<String> availableToTimeComboBox;
+    private DateTimePicker availableFromPicker;
+    private DateTimePicker availableToPicker;
     private JButton searchButton;
     private JButton bookButton;
     private JTable resultsTable;
@@ -72,31 +70,17 @@ public class UserSearchFrame extends JFrame {
 
         gbc.gridx = 0;
         gbc.gridy++;
-        searchPanel.add(new JLabel("Available From (Date):"), gbc);
+        searchPanel.add(new JLabel("Available From:"), gbc);
         gbc.gridx = 1;
-        availableFromPicker = createDatePicker();
+        availableFromPicker = new DateTimePicker();
         searchPanel.add(availableFromPicker, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
-        searchPanel.add(new JLabel("Available From (Time):"), gbc);
+        searchPanel.add(new JLabel("Available To:"), gbc);
         gbc.gridx = 1;
-        availableFromTimeComboBox = createTimeComboBox();
-        searchPanel.add(availableFromTimeComboBox, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy++;
-        searchPanel.add(new JLabel("Available To (Date):"), gbc);
-        gbc.gridx = 1;
-        availableToPicker = createDatePicker();
+        availableToPicker = new DateTimePicker();
         searchPanel.add(availableToPicker, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy++;
-        searchPanel.add(new JLabel("Available To (Time):"), gbc);
-        gbc.gridx = 1;
-        availableToTimeComboBox = createTimeComboBox();
-        searchPanel.add(availableToTimeComboBox, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -112,7 +96,6 @@ public class UserSearchFrame extends JFrame {
         }
         searchPanel.add(featuresPanel, gbc);
 
-        // Add rating field
         gbc.gridx = 0;
         gbc.gridy++;
         searchPanel.add(new JLabel("Rating:"), gbc);
@@ -120,7 +103,6 @@ public class UserSearchFrame extends JFrame {
         ratingField = new JTextField(10);
         searchPanel.add(ratingField, gbc);
 
-        // Add floor field
         gbc.gridx = 0;
         gbc.gridy++;
         searchPanel.add(new JLabel("Floor:"), gbc);
@@ -137,7 +119,6 @@ public class UserSearchFrame extends JFrame {
 
         add(searchPanel, BorderLayout.NORTH);
 
-        // Table setup
         tableModel = new DefaultTableModel(
                 new Object[][]{},
                 new String[]{"Room Name", "Capacity", "Features", "Location"}
@@ -145,7 +126,6 @@ public class UserSearchFrame extends JFrame {
         resultsTable = new JTable(tableModel);
         add(new JScrollPane(resultsTable), BorderLayout.CENTER);
 
-        // Book Button
         JPanel bookPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         bookButton = new JButton("Book This Room");
         bookPanel.add(bookButton);
@@ -166,48 +146,15 @@ public class UserSearchFrame extends JFrame {
         });
     }
 
-    private JComboBox<String> createTimeComboBox() {
-        String[] times = {"09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM",
-                "04:00 PM", "05:00 PM", "06:00 PM", "07:00 PM", "08:00 PM", "09:00 PM", "10:00 PM", "11:00 PM"};
-        return new JComboBox<>(times);
-    }
-
-    private JDatePickerImpl createDatePicker() {
-        UtilDateModel model = new UtilDateModel();
-        JDatePanelImpl datePanel = new JDatePanelImpl(model);
-        return new JDatePickerImpl(datePanel);
-    }
-
     private void searchRooms() {
         String capacityText = capacityField.getText();
         String location = locationField.getText();
 
-        Date availableFromDate = (Date) availableFromPicker.getModel().getValue();
-        Date availableToDate = (Date) availableToPicker.getModel().getValue();
+        LocalDateTime availableFromDate = availableFromPicker.getDate();
+        Date availableToDate = availableToPicker.getDate();
 
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
-
-        String availableFromTime = (String) availableFromTimeComboBox.getSelectedItem();
-        String availableToTime = (String) availableToTimeComboBox.getSelectedItem();
-
-        LocalDateTime availableFrom = null;
-        LocalDateTime availableTo = null;
-
-        try {
-            if (availableFromDate != null && availableFromTime != null) {
-                LocalDateTime date = availableFromDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                LocalTime time = LocalTime.parse(availableFromTime, timeFormatter);
-                availableFrom = date.with(time);
-            }
-
-            if (availableToDate != null && availableToTime != null) {
-                LocalDateTime date = availableToDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                LocalTime time = LocalTime.parse(availableToTime, timeFormatter);
-                availableTo = date.with(time);
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error parsing date/time.", "Date Parsing Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+        if (availableFromDate == null || availableToDate == null) {
+            JOptionPane.showMessageDialog(this, "Please select valid date and time.", "Input Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -251,13 +198,10 @@ public class UserSearchFrame extends JFrame {
             }
         }
 
-        // Update the searchRooms call to include availableFrom and availableTo
-        List<Room> rooms = roomDao.searchRooms(capacity, location, selectedFeatures, rating, floor, availableFrom, availableTo);
+        List<Room> rooms = roomDao.searchRooms(capacity, location, selectedFeatures, rating, floor, availableFromDate, availableToDate);
 
-        // Clear previous table data
         tableModel.setRowCount(0);
 
-        // Populate table with new data
         for (Room room : rooms) {
             Object[] row = {room.getRoomName(), room.getCapacity(), room.getFeatures(), room.getLocation()};
             tableModel.addRow(row);
@@ -279,7 +223,6 @@ public class UserSearchFrame extends JFrame {
             return;
         }
 
-        // Get booking times from user input
         LocalDateTime startTime = getDateTimeFromUser("Start Time");
         LocalDateTime endTime = getDateTimeFromUser("End Time");
 
@@ -288,15 +231,17 @@ public class UserSearchFrame extends JFrame {
             return;
         }
 
-        // Proceed with booking the room
+        Booking booking = new Booking(0, currentUser.getUserId(), room.getRoomId(), startTime, endTime, "Meeting", "Confirmed");
+
+        // Assuming you have a BookingDao for handling booking data
         // Replace this with your actual booking method
-        // bookingDao.bookRoom(currentUser.getUserId(), room.getRoomId(), startTime, endTime);
+        BookingDao bookingDao = new BookingDaoImpl();
+        bookingDao.bookRoom(booking);
+
         JOptionPane.showMessageDialog(this, "Room " + room.getRoomName() + " booked successfully!", "Booking Confirmation", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private LocalDateTime getDateTimeFromUser(String title) {
-        // For simplicity, using JOptionPane for date/time input
-        // Replace with your own implementation for better user experience
         String input = JOptionPane.showInputDialog(this, title + " (yyyy-MM-dd HH:mm):");
         if (input != null && !input.isEmpty()) {
             try {
@@ -306,5 +251,34 @@ public class UserSearchFrame extends JFrame {
             }
         }
         return null;
+    }
+}
+
+// Custom DateTimePicker Class
+class DateTimePicker extends JPanel {
+    private JDatePicker datePicker;
+    private JSpinner timeSpinner;
+
+    public DateTimePicker() {
+        setLayout(new BorderLayout());
+
+        // Date Picker
+        datePicker = new JDatePicker();
+        add(datePicker, BorderLayout.NORTH);
+
+        // Time Spinner
+        SpinnerModel timeModel = new SpinnerDateModel();
+        timeSpinner = new JSpinner(timeModel);
+        JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(timeSpinner, "HH:mm");
+        timeSpinner.setEditor(timeEditor);
+        add(timeSpinner, BorderLayout.SOUTH);
+    }
+
+    public Date getDate() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime((Date) datePicker.getModel().getValue());
+        cal.set(Calendar.HOUR_OF_DAY, ((Date) timeSpinner.getValue()).getHours());
+        cal.set(Calendar.MINUTE, ((Date) timeSpinner.getValue()).getMinutes());
+        return cal.getTime();
     }
 }

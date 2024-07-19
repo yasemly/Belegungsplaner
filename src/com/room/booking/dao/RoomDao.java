@@ -12,6 +12,7 @@ public interface RoomDao {
     void deleteRoom(int roomId);
     List<Room> searchRooms(int capacity, String location, List<String> features,
                            double rating, int floor, LocalDateTime availableFrom, LocalDateTime availableTo);
+
     List<Room> getAllRooms();
     int getRoomId(String roomName);
     Room getRoomByName(String name);
