@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/main/java/com/belegungsplaner/model/model.iml" filepath="$PROJECT_DIR$/main/java/com/belegungsplaner/model/model.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/src.iml" filepath="$PROJECT_DIR$/.idea/src.iml" />
+      <module fileurl="file://$PROJECT_DIR$/room-booking-swing-app.iml" filepath="$PROJECT_DIR$/room-booking-swing-app.iml" />
     </modules>
   </component>
 </project>
