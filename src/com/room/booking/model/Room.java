@@ -1,43 +1,42 @@
 package com.room.booking.model;
 
+import java.util.List;
+
 public class Room {
-
-
-    private int room_id;
-    private String room_name;
-
+    private int roomId;
+    private String roomName;
     private int capacity;
-
+    private List<String> features; // List to store features
     private String location;
+    private double rating; // Attribute for room rating
+    private int floor; // Attribute for room floor
 
-    private String features;
-
-    public Room(int room_id, String room_name, int capacity, String location, String features) {
-        this.room_id = room_id;
-        this.room_name = room_name;
+    public Room(int roomId, String roomName, int capacity, List<String> features, String location, double rating, int floor) {
+        this.roomId = roomId;
+        this.roomName = roomName;
         this.capacity = capacity;
-        this.location = location;
         this.features = features;
+        this.location = location;
+        this.rating = rating;
+        this.floor = floor;
     }
 
-    public Room() {
+    // Getters and setters for all attributes
 
+    public int getRoomId() {
+        return roomId;
     }
 
-    public int getRoom_id() {
-        return room_id;
+    public void setRoomId(int roomId) {
+        this.roomId = roomId;
     }
 
-    public void setRoom_id(int room_id) {
-        this.room_id = room_id;
+    public String getRoomName() {
+        return roomName;
     }
 
-    public String getRoom_name() {
-        return room_name;
-    }
-
-    public void setRoom_name(String room_name) {
-        this.room_name = room_name;
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
     }
 
     public int getCapacity() {
@@ -48,6 +47,14 @@ public class Room {
         this.capacity = capacity;
     }
 
+    public List<String> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(List<String> features) {
+        this.features = features;
+    }
+
     public String getLocation() {
         return location;
     }
@@ -56,13 +63,19 @@ public class Room {
         this.location = location;
     }
 
-    public String getFeatures() {
-        return features;
+    public double getRating() {
+        return rating;
     }
 
-    public void setFeatures(String features) {
-        this.features = features;
+    public void setRating(double rating) {
+        this.rating = rating;
     }
 
+    public int getFloor() {
+        return floor;
+    }
 
+    public void setFloor(int floor) {
+        this.floor = floor;
+    }
 }

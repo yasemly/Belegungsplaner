@@ -1,26 +1,48 @@
 package com.room.booking.util;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class DBConnection {
 
-
-    private static final String jdbcURL = "jdbc:mysql://localhost:3306/booking_system";
-    private static final String dbUser = "root";
-    private static final  String dbPassword = "pwd";
+    private static final String URL = "jdbc:mysql://localhost:3306/bookingsconnection";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "testtest200";
 
     public static Connection getConnection() {
-        Connection con = null;
         try {
-            con = DriverManager.getConnection(jdbcURL, dbUser, dbPassword);
+            return DriverManager.getConnection(URL, USERNAME, PASSWORD);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error connecting to the database", e);
         }
-        return con;
     }
 
+    public static void closeConnection(Connection connection) {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
+    public static void closeStatement(Statement statement) {
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
+    public static void closeResultSet(ResultSet resultSet) {
+        if (resultSet != null) {
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

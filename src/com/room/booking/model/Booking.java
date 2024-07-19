@@ -7,10 +7,24 @@ public class Booking {
     private int bookingId;
     private int userId;
     private int roomId;
-    private LocalDateTime bookingStart;
-    private LocalDateTime bookingEnd;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private String purpose;
     private String status;
 
+    // Constructor with all fields
+    public Booking(int bookingId, int userId, int roomId, LocalDateTime startTime,
+                   LocalDateTime endTime, String purpose, String status) {
+        this.bookingId = bookingId;
+        this.userId = userId;
+        this.roomId = roomId;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.purpose = purpose;
+        this.status = status;
+    }
+
+    // Getters and setters
     public int getBookingId() {
         return bookingId;
     }
@@ -35,20 +49,28 @@ public class Booking {
         this.roomId = roomId;
     }
 
-    public LocalDateTime getBookingStart() {
-        return bookingStart;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setBookingStart(LocalDateTime bookingStart) {
-        this.bookingStart = bookingStart;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 
-    public LocalDateTime getBookingEnd() {
-        return bookingEnd;
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
-    public void setBookingEnd(LocalDateTime bookingEnd) {
-        this.bookingEnd = bookingEnd;
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
     }
 
     public String getStatus() {

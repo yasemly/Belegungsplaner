@@ -1,6 +1,5 @@
 package com.room.booking.dao;
 
-import com.room.booking.model.Room;
 import com.room.booking.model.User;
 import com.room.booking.util.DBConnection;
 
@@ -8,42 +7,120 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-//This class will only do DB operations related to USer Domain class
-//db operation: CRUD operations
-// reading from dB
-//adding to DB
-//deleting from DB
-//Updating to DB
 public class UserDaoImpl implements UserDao {
 
-   private static final String sql = "select * from users ";
+    private static final String DELETE_EMPLOYER_SQL = "DELETE FROM users WHERE username = ? AND role = 'employer'";
 
-   private static final String GET_USER_BY_NAME_SQL =  "select * from users where username = ?";
+    private static final String SELECT_USER_BY_USERNAME_AND_PASSWORD =
+            "SELECT * FROM users WHERE username = ? AND password = ?";
+
+    private static final String SELECT_ALL_USERS =
+            "SELECT * FROM users";
+
+    private static final String INSERT_USER_SQL =
+            "INSERT INTO users (username, full_name, email, role, password) VALUES (?, ?, ?, ?, ?)";
+
     @Override
-    public List<User> getAllUsers() {
-
-        List<User> users = new ArrayList<>();
-        final Connection connection = DBConnection.getConnection();
-        Statement st = null;
-        ResultSet rs = null;
+    public User getUserByUsernameAndPassword(String username, String password) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        User user = null;
 
         try {
-            st = connection.createStatement();
-            rs = st.executeQuery(sql);
-            while (rs.next()) {
+            connection = DBConnection.getConnection();
+            preparedStatement = connection.prepareStatement(SELECT_USER_BY_USERNAME_AND_PASSWORD);
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, password);
+            resultSet = preparedStatement.executeQuery();
 
-                User user = new User();
-                user.setUserId(rs.getInt("user_id"));
-                user.setUserName(rs.getString("username"));
-                user.setFullName(rs.getString("full_name"));
-                user.setEmail(rs.getString("email"));
+            if (resultSet.next()) {
+                int userId = resultSet.getInt("user_id");
+                String fullName = resultSet.getString("full_name");
+                String email = resultSet.getString("email");
+                String role = resultSet.getString("role");
+
+                user = new User(userId, username, fullName, email, role, password);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(connection, preparedStatement, resultSet);
+        }
+
+        return user;
+    }
+
+    @Override
+    public void registerUser(String username, String fullName, String email, String password) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            connection = DBConnection.getConnection();
+            preparedStatement = connection.prepareStatement(INSERT_USER_SQL);
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, fullName);
+            preparedStatement.setString(3, email);
+            preparedStatement.setString(4, "user"); // Assuming default role is "user"
+            preparedStatement.setString(5, password);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(connection, preparedStatement, null);
+        }
+    }
+
+    @Override
+    public void registerEmployer(String username, String fullName, String email, String password) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            connection = DBConnection.getConnection();
+            preparedStatement = connection.prepareStatement(INSERT_USER_SQL);
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, fullName);
+            preparedStatement.setString(3, email);
+            preparedStatement.setString(4, "employer");
+            preparedStatement.setString(5, password);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(connection, preparedStatement, null);
+        }
+    }
+
+
+    @Override
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = DBConnection.getConnection();
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(SELECT_ALL_USERS);
+
+            while (resultSet.next()) {
+                int userId = resultSet.getInt("user_id");
+                String username = resultSet.getString("username");
+                String fullName = resultSet.getString("full_name");
+                String email = resultSet.getString("email");
+                String role = resultSet.getString("role");
+                String password = resultSet.getString("password");
+
+                User user = new User(userId, username, fullName, email, role, password);
                 users.add(user);
             }
-            rs.close();
-            st.close();
-            connection.close();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+        } finally {
+            closeResources(connection, statement, resultSet);
         }
 
         return users;
@@ -51,29 +128,90 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User getUserById(int id) {
-        return null;
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        User user = null;
+
+        try {
+            connection = DBConnection.getConnection();
+            preparedStatement = connection.prepareStatement("SELECT * FROM users WHERE user_id = ?");
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                String username = resultSet.getString("username");
+                String fullName = resultSet.getString("full_name");
+                String email = resultSet.getString("email");
+                String role = resultSet.getString("role");
+                String password = resultSet.getString("password");
+
+                user = new User(id, username, fullName, email, role, password);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(connection, preparedStatement, resultSet);
+        }
+
+        return user;
     }
 
     @Override
-    public User getUserByName(String userName) {
+    public User getUserByUserame(String username) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        User user = null;
+
         try {
-            final PreparedStatement preparedStatement = DBConnection.getConnection().prepareStatement(GET_USER_BY_NAME_SQL);
-            preparedStatement.setString(1, userName);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) { // try with resources
-                if (resultSet.next()) {
-                    int userId = resultSet.getInt("user_id");
-                    String username = resultSet.getString("username");
-                    String fullName = (resultSet.getString("full_name"));
-                    String email = (resultSet.getString("email"));
-                    return new User(userId, username, fullName, email);
-                } else {
-                    return null; // or throw an exception if the room is not found
-                }
+            connection = DBConnection.getConnection();
+            preparedStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
+            preparedStatement.setString(1, username);
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                int userId = resultSet.getInt("user_id");
+                String fullName = resultSet.getString("full_name");
+                String email = resultSet.getString("email");
+                String role = resultSet.getString("role");
+                String password = resultSet.getString("password");
+
+                user = new User(userId, username, fullName, email, role, password);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+        } finally {
+            closeResources(connection, preparedStatement, resultSet);
         }
 
+        return user;
+    }
 
+    @Override
+    public void deleteUser(String username) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            connection = DBConnection.getConnection();
+            preparedStatement = connection.prepareStatement("DELETE FROM users WHERE username = ?");
+            preparedStatement.setString(1, username);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(connection, preparedStatement, null);
+        }
+    }
+
+    private void closeResources(Connection connection, Statement statement, ResultSet resultSet) {
+        try {
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
+            if (connection != null) connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
