@@ -1,0 +1,65 @@
+package main.java.com.belegungsplaner.view;
+
+import main.java.com.belegungsplaner.model.BenutzerVerwaltung;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class RegistrierungsView extends JFrame {
+    private JTextField benutzernameField;
+    private JPasswordField passwortField;
+    private JTextField emailField;
+    private JButton registrierenButton;
+    private BenutzerVerwaltung benutzerVerwaltung;
+
+    public RegistrierungsView(BenutzerVerwaltung benutzerVerwaltung) {
+        this.benutzerVerwaltung = benutzerVerwaltung;
+
+        setTitle("Registrierung");
+        setSize(300, 200);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new GridLayout(4, 2));
+
+        add(new JLabel("Benutzername:"));
+        benutzernameField = new JTextField();
+        add(benutzernameField);
+
+        add(new JLabel("Passwort:"));
+        passwortField = new JPasswordField();
+        add(passwortField);
+
+        add(new JLabel("E-Mail:"));
+        emailField = new JTextField();
+        add(emailField);
+
+        registrierenButton = new JButton("Registrieren");
+        add(registrierenButton);
+
+        registrierenButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String benutzername = benutzernameField.getText();
+                String passwort = new String(passwortField.getPassword());
+                String email = emailField.getText();
+
+                if (benutzerVerwaltung.registrieren(benutzername, passwort, email)) {
+                    JOptionPane.showMessageDialog(null, "Registrierung erfolgreich!");
+                    dispose();
+                    new AnmeldeView(benutzerVerwaltung).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Benutzername bereits vergeben!");
+                }
+            }
+        });
+    }
+
+    public static void main(String[] args) {
+        BenutzerVerwaltung benutzerVerwaltung = new BenutzerVerwaltung();
+        SwingUtilities.invokeLater(() -> {
+            RegistrierungsView view = new RegistrierungsView(benutzerVerwaltung);
+            view.setVisible(true);
+        });
+    }
+}

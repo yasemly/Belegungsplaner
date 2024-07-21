@@ -5,20 +5,30 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public abstract class Raum implements Serializable {
+public abstract class Raum implements Comparable<Raum>, Serializable {
+    private static final long serialVersionUID = 1L;
+    private int id;
     private String name;
     private double flaeche;
     private int sitzplaetze;
     private int tische;
-    private List<Buchung> buchungen; // Liste für Buchungen
+    private String standort;
+    private boolean wlanVerfuegbar;
+    private boolean klimatisierung;
+    private List<String> ausstattung;
+    private List<Buchung> buchungen;
 
     // Konstruktor
-    public Raum(String name, double flaeche, int sitzplaetze, int tische) {
+    public Raum(String name, double flaeche, int sitzplaetze, int tische, String standort, boolean wlanVerfuegbar, boolean klimatisierung) {
         this.name = name;
         this.flaeche = flaeche;
         this.sitzplaetze = sitzplaetze;
         this.tische = tische;
-        this.buchungen = new ArrayList<>(); // Initialisieren der Buchungsliste
+        this.standort = standort;
+        this.wlanVerfuegbar = wlanVerfuegbar;
+        this.klimatisierung = klimatisierung;
+        this.ausstattung = new ArrayList<>();
+        this.buchungen = new ArrayList<>();
     }
 
     // Getter und Setter
@@ -54,38 +64,54 @@ public abstract class Raum implements Serializable {
         this.tische = tische;
     }
 
+    public List<Buchung> getBuchungen() {
+        return buchungen;
+    }
+
+    public void addAusstattung(String ausstattungElement) {
+        this.ausstattung.add(ausstattungElement);
+    }
+
     // Methode zur Prüfung der Verfügbarkeit
     public boolean istVerfuegbar(Date startZeit, Date endZeit) {
         for (Buchung buchung : buchungen) {
             if (buchung.kollidiert(startZeit, endZeit)) {
-                return false; // Raum ist nicht verfügbar
+                return false;
             }
         }
-        return true; // Raum ist verfügbar
+        return true;
     }
 
     // Methode zur Buchung des Raumes
     public boolean buchungHinzufuegen(Buchung neueBuchung) {
         if (istVerfuegbar(neueBuchung.getStartZeit(), neueBuchung.getEndZeit())) {
             buchungen.add(neueBuchung);
-            return true; // Buchung erfolgreich
+            return true;
         } else {
-            return false; // Raum ist zur gewünschten Zeit nicht verfügbar
+            return false;
         }
     }
 
-    // Methode zur Buchungsliste
-    public List<Buchung> getBuchungen() {
-        return buchungen;
+    // Methode zur Stornierung einer Buchung
+    public boolean buchungStornieren(Buchung zuStornierendeBuchung) {
+        return buchungen.remove(zuStornierendeBuchung);
     }
 
-    // Abstrakte Methode, die von Unterklassen implementiert werden muss
+    // Methode zur Änderung einer Buchung
+    public boolean buchungAendern(Buchung alteBuchung, Buchung neueBuchung) {
+        if (buchungen.contains(alteBuchung)) {
+            buchungen.remove(alteBuchung);
+            return buchungHinzufuegen(neueBuchung);
+        }
+        return false;
+    }
+
+    // Abstrakte Methode
     public abstract void nutzungBeschreiben();
 
-    // Implementierung der compareTo-Methode aus dem Comparable-Interface
+    // Implementierung der compareTo-Methode
     @Override
     public int compareTo(Raum other) {
-        // Beispiel: Räume nach Fläche vergleichen
         return Double.compare(this.flaeche, other.flaeche);
     }
 
@@ -96,6 +122,11 @@ public abstract class Raum implements Serializable {
                 ", flaeche=" + flaeche +
                 ", sitzplaetze=" + sitzplaetze +
                 ", tische=" + tische +
+                ", standort='" + standort + '\'' +
+                ", wlanVerfuegbar=" + wlanVerfuegbar +
+                ", klimatisierung=" + klimatisierung +
+                ", ausstattung=" + ausstattung +
                 '}';
     }
 }
+

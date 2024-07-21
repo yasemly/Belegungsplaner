@@ -1,20 +1,35 @@
 package main.java.com.belegungsplaner.model;
 
-public class Benutzer {
-    private String name;
+import java.io.Serializable;
+
+public class Benutzer implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String benutzername;
+    private String passwort;
     private String email;
 
-    public Benutzer(String name, String email) {
-        this.name = name;
+    // Konstruktor
+    public Benutzer(String benutzername, String passwort, String email) {
+        this.benutzername = benutzername;
+        this.passwort = passwort;
         this.email = email;
     }
 
-    public String getName() {
-        return name;
+    // Getter und Setter
+    public String getBenutzername() {
+        return benutzername;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setBenutzername(String benutzername) {
+        this.benutzername = benutzername;
+    }
+
+    public String getPasswort() {
+        return passwort;
+    }
+
+    public void setPasswort(String passwort) {
+        this.passwort = passwort;
     }
 
     public String getEmail() {
@@ -28,7 +43,7 @@ public class Benutzer {
     @Override
     public String toString() {
         return "Benutzer{" +
-                "name='" + name + '\'' +
+                "benutzername='" + benutzername + '\'' +
                 ", email='" + email + '\'' +
                 '}';
     }
