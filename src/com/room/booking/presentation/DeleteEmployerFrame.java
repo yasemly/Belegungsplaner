@@ -1,35 +1,45 @@
 package com.room.booking.presentation;
 
-        import com.room.booking.dao.UserDao;
-        import com.room.booking.dao.UserDaoImpl;
-        import com.room.booking.model.User;
+import com.room.booking.dao.BaseUserDao; // Use BaseUserDao for deletion
+import com.room.booking.dao.BaseUserDaoImpl;
+import com.room.booking.model.Employer;
 
-        import javax.swing.*;
-        import java.awt.*;
-        import java.awt.event.ActionEvent;
-        import java.awt.event.ActionListener;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+/**
+ * GUI-Frame zum Löschen eines Arbeitgebers.
+ */
 public class DeleteEmployerFrame extends JFrame {
 
+    // Swing-Komponenten
     private JTextField usernameField;
-    private UserDao userDao;
 
+    // Data Access Object für Benutzer
+    private BaseUserDao userDao;
+
+    /**
+     * Konstruktor für das DeleteEmployerFrame.
+     * Initialisiert die Komponenten und das Layout des Frames.
+     */
     public DeleteEmployerFrame() {
-        userDao = new UserDaoImpl(); // Initialize UserDaoImpl
+        userDao = new BaseUserDaoImpl();
 
-        setTitle("Delete Employer");
+        setTitle("Arbeitgeber löschen");
         setSize(400, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new GridLayout(3, 2, 10, 10));
 
-        // Username
-        add(new JLabel("Username:"));
+        // Benutzername
+        add(new JLabel("Benutzername:"));
         usernameField = new JTextField();
         add(usernameField);
 
-        // Delete Button
-        JButton deleteButton = new JButton("Delete");
+        // Löschen-Button
+        JButton deleteButton = new JButton("Löschen");
         add(deleteButton);
         deleteButton.addActionListener(new ActionListener() {
             @Override
@@ -38,8 +48,8 @@ public class DeleteEmployerFrame extends JFrame {
             }
         });
 
-        // Back to Employer Frame Button
-        JButton backButton = new JButton("Back to Employer Frame");
+        // Zurück zum Arbeitgeber-Fenster Button
+        JButton backButton = new JButton("Zurück zum Arbeitgeber-Fenster");
         add(backButton);
         backButton.addActionListener(new ActionListener() {
             @Override
@@ -49,24 +59,32 @@ public class DeleteEmployerFrame extends JFrame {
         });
     }
 
+    /**
+     * Löscht einen Arbeitgeber aus der Datenbank anhand des Benutzernamens
+     */
     private void deleteEmployer() {
         String username = usernameField.getText().trim();
 
-        // Delete the employer using UserDaoImpl
-        userDao.deleteUser(username);
+        // Löschen des Arbeitgebers mithilfe von BaseUserDaoImpl
+        boolean deleted = userDao.deleteUserByUsername(username);
 
-        JOptionPane.showMessageDialog(this, "Employer deletion successful!");
+        if (deleted) {
+            JOptionPane.showMessageDialog(this, "Arbeitgeber erfolgreich gelöscht!");
+            openEmployerFrame(); // Weiterleitung zum Arbeitgeber-Frame nach dem Löschen
+        } else {
+            JOptionPane.showMessageDialog(this, "Arbeitgeber nicht gefunden oder Löschen fehlgeschlagen.");
+        }
 
-        // Redirect to employer frame after deletion
-        openEmployerFrame();
-
-        // Optionally, close the deletion frame after deletion
-        dispose();
+        dispose(); // Schließen des Lösch-Frames nach dem Löschen
     }
 
+    /**
+     * Öffnet das EmployerFrame und schließt das aktuelle Fenster
+     */
     private void openEmployerFrame() {
-        User user = new User(1, "john.doe@example.com", "John Doe", "john.doe@example.com", "Admin", "password");
-        EmployerFrame employerFrame = new EmployerFrame(user);
+        // Hier sollten Sie den tatsächlichen Benutzer übergeben, nicht einen neuen erstellen
+        // Verwenden Sie Employer, wenn Sie spezifische Arbeitgeberfunktionen benötigen
+        EmployerFrame employerFrame = new EmployerFrame(new Employer(1, "john.doe@example.com", "John Doe", "john.doe@example.com", "password", "IT"));
         employerFrame.setVisible(true);
         dispose();
     }
