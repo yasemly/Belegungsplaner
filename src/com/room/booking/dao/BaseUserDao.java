@@ -4,26 +4,53 @@ import com.room.booking.model.BaseUser;
 import java.util.List;
 
 /**
- * Interface for accessing base user data in the database.
+ * DAO-Interface für alle Benutzeroperationen (sowohl User als auch Employer).
+ * Unterscheidung erfolgt durch department != null für Employer, null für normalen User.
  */
 public interface BaseUserDao {
 
+    /**
+     * Gibt einen Benutzer (User oder Employer) anhand von Benutzername und Passwort zurück.
+     */
     BaseUser getUserByUsernameAndPassword(String username, String password);
 
-    // Change this to return List<BaseUser>
+    /**
+     * Gibt alle Benutzer in der 'users'-Tabelle zurück (sowohl normale Benutzer als auch Arbeitgeber).
+     */
     List<BaseUser> getAllUsers();
 
+    /**
+     * Gibt einen einzelnen Benutzer (User oder Employer) anhand der numerischen ID zurück.
+     */
     BaseUser getUserById(int userId);
 
-    void createUser(int userId, String username, String fullName, String email, String password);
+    /**
+     * Fügt einen BaseUser (User oder Employer) in die DB ein.
+     */
+    BaseUser createBaseUser(BaseUser user);
 
-    void registerUser(String username, String fullName, String email, String password);
+    /**
+     * Aktualisiert einen bestehenden Benutzer (User oder Employer).
+     */
+    void updateUser(BaseUser user);
 
-    void registerEmployer(String username, String fullName, String email, String password, String department);
+    /**
+     * Löscht einen Benutzer anhand der numerischen ID.
+     */
+    void deleteUser(int userId);
 
+    /**
+     * Löscht einen Benutzer anhand des Benutzernamens.
+     */
     boolean deleteUserByUsername(String username);
 
-    void updateUser(int userId, String fullName, String email, String password, String role);
+    /**
+     * Registriert einen normalen Benutzer (department = null).
+     */
+    void registerUser(String username, String fullName, String email, String password);
 
-    void deleteUser(int userId);
+    /**
+     * Registriert einen Arbeitgeber (department != null).
+     */
+    void registerEmployer(String username, String fullName, String email, String password, String department);
 }

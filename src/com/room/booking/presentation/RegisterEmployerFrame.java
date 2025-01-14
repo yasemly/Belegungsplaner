@@ -94,7 +94,9 @@ public class RegisterEmployerFrame extends JFrame {
         String department = departmentField.getText().trim(); // Get department from input
 
         // Register the employer using BaseUserDaoImpl (korrigiert)
-        userDao.registerEmployer(username, fullName, email, password, department);
+        Employer employer = new Employer(0, username, fullName, email, password, department);
+        userDao.createBaseUser(employer);
+
 
         JOptionPane.showMessageDialog(this, "Arbeitgeber-Registrierung erfolgreich!");
 

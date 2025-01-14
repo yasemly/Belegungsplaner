@@ -122,4 +122,5 @@ public class LoginFrame extends JFrame {
             loginFrame.setVisible(true);
         });
     }
+
 }

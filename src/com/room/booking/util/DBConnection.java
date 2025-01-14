@@ -11,10 +11,10 @@ import java.sql.Statement;
  */
 public class DBConnection {
 
-    // Datenbankverbindungsdetails
-    private static final String URL = "jdbc:mysql://localhost:3306/bookingsconnection";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "testtest200";
+    // Datenbankverbindungsdetails für PostgreSQL
+    private static final String URL = "jdbc:postgresql://localhost:5432/booking_system";
+    private static final String USERNAME = "postgres";
+    private static final String PASSWORD = "test";
 
     // Privater Konstruktor, um Instanziierung zu verhindern
     private DBConnection() {
@@ -44,7 +44,7 @@ public class DBConnection {
             try {
                 connection.close();
             } catch (SQLException e) {
-                e.printStackTrace(); // Bessere Fehlerbehandlung in einer realen Anwendung wäre angebracht
+                e.printStackTrace(); // In einer realen Anwendung: besseres Fehlerhandling
             }
         }
     }
@@ -59,7 +59,7 @@ public class DBConnection {
             try {
                 statement.close();
             } catch (SQLException e) {
-                e.printStackTrace(); // Bessere Fehlerbehandlung in einer realen Anwendung wäre angebracht
+                e.printStackTrace(); // In einer realen Anwendung: besseres Fehlerhandling
             }
         }
     }
@@ -74,7 +74,7 @@ public class DBConnection {
             try {
                 resultSet.close();
             } catch (SQLException e) {
-                e.printStackTrace(); // Bessere Fehlerbehandlung in einer realen Anwendung wäre angebracht
+                e.printStackTrace(); // In einer realen Anwendung: besseres Fehlerhandling
             }
         }
     }

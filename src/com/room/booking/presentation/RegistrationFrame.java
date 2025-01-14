@@ -82,7 +82,7 @@ public class RegistrationFrame extends JFrame {
 
         BaseUserDao userDao = new BaseUserDaoImpl(); // Use BaseUserDao for registration
         String role = "user"; // Set default role or get from user input if needed
-        userDao.registerUser(username, fullName, email, password, role);
+        userDao.registerUser(username, fullName, email, password);
         JOptionPane.showMessageDialog(this, "Registrierung erfolgreich!");
 
         // Weiterleitung zur Anmeldeseite nach der Registrierung

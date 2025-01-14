@@ -1,27 +1,20 @@
 package com.room.booking.dao;
 
-import com.room.booking.model.BaseUser;
 import com.room.booking.model.User;
 import java.util.List;
 
 /**
- * Interface for accessing user data in the database.
- * Extends the BaseUserDao interface to provide additional user-specific methods.
+ * Spezielles DAO-Interface für normale Benutzer.
  */
 public interface UserDao extends BaseUserDao {
 
     /**
-     * Retrieves a user by their ID.
-     *
-     * @param userId The ID of the user.
-     * @return The user if found, otherwise null.
+     * Gibt nur die normalen Benutzer (wo department null ist) zurück.
      */
-    User getUserById(int userId);
+    List<User> getAllNormalUsers();
 
     /**
-     * Retrieves all users from the database.
-     *
-     * @return A list of all users.
+     * Gibt einen normalen Benutzer anhand der ID zurück.
      */
-    List<BaseUser> getAllUsers(); // Ensures this returns List<User>
+    User getUserById(int userId);
 }

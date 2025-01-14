@@ -3,7 +3,7 @@ package com.room.booking.presentation;
 import com.room.booking.dao.RoomDao;
 import com.room.booking.dao.RoomDaoImpl;
 import com.room.booking.model.Room;
-import com.room.booking.model.User;
+import com.room.booking.model.Employer; // We'll use Employer here instead of User
 
 import javax.swing.*;
 import java.awt.*;
@@ -114,10 +114,13 @@ public class AddRoomFrame extends JFrame {
             features.add("Whiteboard");
         }
 
+        // Create Room object.
+        // The constructor parameters: id, roomName, capacity, features list, location, rating, floor.
+        // Here, rating and floor are given default values (0.0 and 0 respectively).
+        Room room = new Room(0, roomName, roomCapacity, features, roomLocation, 0.0, 0);
         RoomDao roomDao = new RoomDaoImpl();
-        Room room = new Room(0, roomName, roomCapacity, features, roomLocation, 0.0, 0); // Standardwerte für Bewertung und Stockwerk
-
         roomDao.addRoom(room);
+
         JOptionPane.showMessageDialog(this, "Raum erfolgreich hinzugefügt!");
 
         // Felder nach dem Hinzufügen leeren
@@ -125,17 +128,20 @@ public class AddRoomFrame extends JFrame {
     }
 
     /**
-     * Öffnet das EmployerFrame und schließt das aktuelle Fenster
+     * Öffnet das EmployerFrame und schließt das aktuelle Fenster.
      */
     private void openEmployerFrame() {
-        // Hier sollten Sie den tatsächlichen Benutzer übergeben, nicht einen neuen erstellen
-        EmployerFrame employerFrame = new EmployerFrame(new User(1, "admin", "Admin User", "admin@example.com", "password", "Admin")); // Add "role" parameter
+        // Hier sollten Sie den tatsächlichen Benutzer übergeben.
+        // Wir erstellen ein Beispiel-Employer, da Employer erwartet wird.
+        // Parameters: userId, username, fullName, email, password, department.
+        Employer sampleEmployer = new Employer(1, "admin", "Admin User", "admin@example.com", "password", "Admin");
+        EmployerFrame employerFrame = new EmployerFrame(sampleEmployer);
         employerFrame.setVisible(true);
         dispose();
     }
 
     /**
-     * Leert alle Eingabefelder und setzt die Checkboxes zurück
+     * Leert alle Eingabefelder und setzt die Checkboxes zurück.
      */
     private void clearFields() {
         roomNameField.setText("");

@@ -2,70 +2,58 @@ package com.room.booking.presentation;
 
 import com.room.booking.model.BaseUser;
 import com.room.booking.model.Employer;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-/**
- * GUI-Frame für die Arbeitgeber-Ansicht.
- * Bietet verschiedene Optionen für die Verwaltung von Arbeitgebern, Benutzern, Räumen und Buchungen.
- */
 public class EmployerFrame extends JFrame {
 
-    // Swing-Komponenten für Arbeitgeber-Optionen
+    // Swing Components for Employer Options
     private JButton addEmployerButton;
     private JButton deleteEmployerButton;
     private JButton updateEmployerButton;
 
-    // Swing-Komponenten für Benutzer-Optionen
+    // Swing Components for User Options
     private JButton addUserButton;
     private JButton deleteUserButton;
     private JButton updateUserButton;
 
-    // Swing-Komponenten für Raum-Optionen
+    // Swing Components for Room Options
     private JButton addRoomButton;
     private JButton deleteRoomButton;
     private JButton updateRoomButton;
 
-    // Swing-Komponenten für Buchungs-Optionen
+    // Swing Components for Booking Options
     private JButton addBookingButton;
     private JButton deleteBookingButton;
     private JButton updateBookingButton;
 
-    // Der aktuell angemeldete Benutzer
+    // The currently logged-in user
     private BaseUser user;
 
     /**
-     * Konstruktor für das EmployerFrame
+     * Constructor for EmployerFrame
      *
-     * @param user Der aktuell angemeldete Benutzer (sollte ein Arbeitgeber sein)
+     * @param user The currently logged-in user (should be an employer)
      */
     public EmployerFrame(BaseUser user) {
         this.user = user;
-
         setTitle("Arbeitgeber-Seite");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new GridLayout(5, 3)); // Layout angepasst, um alle Buttons anzuzeigen
+        setLayout(new GridLayout(5, 3)); // Layout adjusted to show all buttons
 
-        // Initialisierung der Buttons für Arbeitgeber-Optionen
+        // Initialize the buttons for different options
         initializeEmployerButtons();
-
-        // Initialisierung der Buttons für Benutzer-Optionen
         initializeUserButtons();
-
-        // Initialisierung der Buttons für Raum-Optionen
         initializeRoomButtons();
-
-        // Initialisierung der Buttons für Buchungs-Optionen
         initializeBookingButtons();
     }
 
     /**
-     * Initialisiert die Buttons für Arbeitgeber-Optionen und deren ActionListener
+     * Initializes the buttons for employer options and their action listeners.
      */
     private void initializeEmployerButtons() {
         addEmployerButton = new JButton("Arbeitgeber hinzufügen");
@@ -73,7 +61,6 @@ public class EmployerFrame extends JFrame {
         addEmployerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // handleEmployerOption("Add Employer"); // Diese Zeile scheint nicht benötigt zu werden
                 new RegisterEmployerFrame().setVisible(true);
                 dispose();
             }
@@ -84,7 +71,6 @@ public class EmployerFrame extends JFrame {
         deleteEmployerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // handleEmployerOption("Delete Employer"); // Diese Zeile scheint nicht benötigt zu werden
                 new DeleteEmployerFrame().setVisible(true);
                 dispose();
             }
@@ -95,13 +81,13 @@ public class EmployerFrame extends JFrame {
         updateEmployerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleEmployerOption("Update Employer"); // Implementieren Sie die Aktualisierungslogik hier
+                handleEmployerOption("Update Employer");
             }
         });
     }
 
     /**
-     * Initialisiert die Buttons für Benutzer-Optionen und deren ActionListener
+     * Initializes the buttons for user options and their action listeners.
      */
     private void initializeUserButtons() {
         addUserButton = new JButton("Benutzer hinzufügen");
@@ -109,8 +95,7 @@ public class EmployerFrame extends JFrame {
         addUserButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new AddUserFrame().setVisible(true); // Öffnen Sie das AddUserFrame
-                // dispose(); // Schließen Sie das aktuelle Fenster, falls gewünscht
+                new AddUserFrame().setVisible(true);
             }
         });
 
@@ -119,7 +104,7 @@ public class EmployerFrame extends JFrame {
         deleteUserButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleUserOption("Delete User"); // Implementieren Sie die Löschlogik hier
+                handleUserOption("Delete User");
             }
         });
 
@@ -128,13 +113,13 @@ public class EmployerFrame extends JFrame {
         updateUserButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleUserOption("Update User"); // Implementieren Sie die Aktualisierungslogik hier
+                handleUserOption("Update User");
             }
         });
     }
 
     /**
-     * Initialisiert die Buttons für Raum-Optionen und deren ActionListener
+     * Initializes the buttons for room options and their action listeners.
      */
     private void initializeRoomButtons() {
         addRoomButton = new JButton("Raum hinzufügen");
@@ -142,8 +127,7 @@ public class EmployerFrame extends JFrame {
         addRoomButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new AddRoomFrame().setVisible(true); // Öffnen Sie das AddRoomFrame
-                // dispose(); // Schließen Sie das aktuelle Fenster, falls gewünscht
+                new AddRoomFrame().setVisible(true);
             }
         });
 
@@ -152,8 +136,7 @@ public class EmployerFrame extends JFrame {
         deleteRoomButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new DeleteRoomFrame().setVisible(true); // Öffnen Sie das DeleteRoomFrame
-                // dispose(); // Schließen Sie das aktuelle Fenster, falls gewünscht
+                new DeleteRoomFrame().setVisible(true);
             }
         });
 
@@ -162,13 +145,13 @@ public class EmployerFrame extends JFrame {
         updateRoomButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleRoomOption("Update Room"); // Implementieren Sie die Aktualisierungslogik hier
+                handleRoomOption("Update Room");
             }
         });
     }
 
     /**
-     * Initialisiert die Buttons für Buchungs-Optionen und deren ActionListener
+     * Initializes the buttons for booking options and their action listeners.
      */
     private void initializeBookingButtons() {
         addBookingButton = new JButton("Buchung hinzufügen");
@@ -176,7 +159,7 @@ public class EmployerFrame extends JFrame {
         addBookingButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleBookingOption("Add Booking"); // Implementieren Sie die Hinzufügen-Logik hier
+                handleBookingOption("Add Booking");
             }
         });
 
@@ -185,7 +168,7 @@ public class EmployerFrame extends JFrame {
         deleteBookingButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleBookingOption("Delete Booking"); // Implementieren Sie die Löschlogik hier
+                handleBookingOption("Delete Booking");
             }
         });
 
@@ -194,12 +177,10 @@ public class EmployerFrame extends JFrame {
         updateBookingButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handleBookingOption("Update Booking"); // Implementieren Sie die Aktualisierungslogik hier
+                handleBookingOption("Update Booking");
             }
         });
     }
-
-
 
     private void handleEmployerOption(String option) {
         JOptionPane.showMessageDialog(this, "Handling employer option: " + option);
@@ -217,12 +198,63 @@ public class EmployerFrame extends JFrame {
         JOptionPane.showMessageDialog(this, "Handling booking option: " + option);
     }
 
-    // Uncomment this method if you want to test the frame
-//    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(() -> {
-//            BaseUser user = new Employer(1, "john.doe@example.com", "John Doe", "john.doe@example.com", "password");
-//            EmployerFrame employerFrame = new EmployerFrame(user);
-//            employerFrame.setVisible(true);
-//        });
-//    }
+    // Stub frames to allow compilation. Replace these with your actual frame implementations.
+    static class RegisterEmployerFrame extends JFrame {
+        public RegisterEmployerFrame() {
+            setTitle("Register Employer");
+            setSize(300, 200);
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            add(new JLabel("Register Employer Frame", SwingConstants.CENTER), BorderLayout.CENTER);
+        }
+    }
+
+    static class DeleteEmployerFrame extends JFrame {
+        public DeleteEmployerFrame() {
+            setTitle("Delete Employer");
+            setSize(300, 200);
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            add(new JLabel("Delete Employer Frame", SwingConstants.CENTER), BorderLayout.CENTER);
+        }
+    }
+
+    static class AddUserFrame extends JFrame {
+        public AddUserFrame() {
+            setTitle("Add User");
+            setSize(300, 200);
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            add(new JLabel("Add User Frame", SwingConstants.CENTER), BorderLayout.CENTER);
+        }
+    }
+
+    static class AddRoomFrame extends JFrame {
+        public AddRoomFrame() {
+            setTitle("Add Room");
+            setSize(300, 200);
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            add(new JLabel("Add Room Frame", SwingConstants.CENTER), BorderLayout.CENTER);
+        }
+    }
+
+    static class DeleteRoomFrame extends JFrame {
+        public DeleteRoomFrame() {
+            setTitle("Delete Room");
+            setSize(300, 200);
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            add(new JLabel("Delete Room Frame", SwingConstants.CENTER), BorderLayout.CENTER);
+        }
+    }
+
+    // Uncomment the following main method to test the frame:
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            BaseUser sampleUser = new Employer(1, "john.doe@example.com", "John Doe", "john.doe@example.com", "password", "IT");
+            EmployerFrame frame = new EmployerFrame(sampleUser);
+            frame.setVisible(true);
+        });
+    }
 }

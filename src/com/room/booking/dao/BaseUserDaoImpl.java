@@ -1,8 +1,8 @@
 package com.room.booking.dao;
 
 import com.room.booking.model.BaseUser;
-import com.room.booking.model.Employer;
 import com.room.booking.model.User;
+import com.room.booking.model.Employer;
 import com.room.booking.util.DBConnection;
 
 import java.sql.*;
@@ -10,271 +10,184 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementierung des BaseUserDao-Interfaces für den Datenbankzugriff auf BaseUser (Employer sowohl User)
+ * Implementierung von BaseUserDao für eine einzelne "users"-Tabelle.
+ * Spalten: user_id, username, full_name, email, password, department
+ * Wenn department null ist, ist es ein normaler User, sonst ein Employer.
  */
 public class BaseUserDaoImpl implements BaseUserDao {
 
     // SQL-Abfragen
-    private static final String SELECT_USER_BY_USERNAME_AND_PASSWORD_SQL =
+    private static final String SELECT_BY_USERNAME_PASSWORD =
             "SELECT * FROM users WHERE username = ? AND password = ?";
-    private static final String SELECT_ALL_USERS_SQL =
+    private static final String SELECT_ALL =
             "SELECT * FROM users";
-    private static final String INSERT_USER_SQL =
-            "INSERT INTO users (username, full_name, email, password, role) VALUES (?, ?, ?, ?, ?)";
-    private static final String INSERT_EMPLOYER_SQL =
-            "INSERT INTO users (username, full_name, email, password, role, department) VALUES (?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_USER_SQL =
-            "UPDATE users SET full_name = ?, email = ?, password = ?, role = ? WHERE user_id = ?";
-    private static final String DELETE_USER_SQL =
+    private static final String SELECT_BY_ID =
+            "SELECT * FROM users WHERE user_id = ?";
+    private static final String INSERT_USER =
+            "INSERT INTO users (username, full_name, email, password, department) VALUES (?, ?, ?, ?, ?)";
+    private static final String UPDATE_USER =
+            "UPDATE users SET username = ?, full_name = ?, email = ?, password = ?, department = ? WHERE user_id = ?";
+    private static final String DELETE_USER =
             "DELETE FROM users WHERE user_id = ?";
-    private static final String DELETE_USER_BY_USERNAME_SQL =
+    private static final String DELETE_USER_BY_USERNAME =
             "DELETE FROM users WHERE username = ?";
 
-    /**
-     * Ruft einen Benutzer anhand von Benutzername und Passwort ab.
-     *
-     * @param username Der Benutzername des Benutzers.
-     * @param password Das Passwort des Benutzers.
-     * @return Der Benutzer mit dem angegebenen Benutzernamen und Passwort oder null, wenn kein Benutzer gefunden wird.
-     */
     @Override
     public BaseUser getUserByUsernameAndPassword(String username, String password) {
-        BaseUser user = null;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_USERNAME_PASSWORD)) {
 
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SELECT_USER_BY_USERNAME_AND_PASSWORD_SQL)) {
+            stmt.setString(1, username);
+            stmt.setString(2, password);
 
-            ps.setString(1, username);
-            ps.setString(2, password);
-
-            try (ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    user = mapResultSetToUser(rs);
+                    return mapResultSetToUser(rs);
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Fehler beim Abrufen des Benutzers", e);
+            throw new RuntimeException("Fehler beim Abrufen des Benutzers nach Benutzername/Passwort", e);
         }
-
-        return user;
+        return null;
     }
 
-    /**
-     * Ruft alle Benutzer aus der Datenbank ab.
-     *
-     * @return Eine Liste aller Benutzer.
-     */
     @Override
     public List<BaseUser> getAllUsers() {
-        List<BaseUser> users = new ArrayList<>();
-
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SELECT_ALL_USERS_SQL);
-             ResultSet rs = ps.executeQuery()) {
+        List<BaseUser> result = new ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(SELECT_ALL)) {
 
             while (rs.next()) {
-                users.add(mapResultSetToUser(rs));
+                result.add(mapResultSetToUser(rs));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Fehler beim Abrufen aller Benutzer", e);
         }
-
-        return users;
+        return result;
     }
 
-    /**
-     * Ruft einen Benutzer anhand seiner ID ab.
-     *
-     * @param userId Die ID des Benutzers.
-     * @return Der Benutzer, wenn gefunden, ansonsten null.
-     */
     @Override
     public BaseUser getUserById(int userId) {
-        BaseUser user = null;
-        String sql = "SELECT * FROM users WHERE user_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_BY_ID)) {
 
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
-
-            ps.setInt(1, userId);
-
-            try (ResultSet rs = ps.executeQuery()) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    user = mapResultSetToUser(rs);
+                    return mapResultSetToUser(rs);
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Fehler beim Abrufen des Benutzers", e);
+            throw new RuntimeException("Fehler beim Abrufen des Benutzers nach ID", e);
         }
-
-        return user;
+        return null;
     }
 
-    /**
-     * Erstellt einen neuen Benutzer in der Datenbank.
-     *
-     * @param userId   Die ID des Benutzers.
-     * @param username Der Benutzername des Benutzers.
-     * @param fullName Der vollständige Name des Benutzers.
-     * @param email    Die E-Mail-Adresse des Benutzers.
-     * @param password Das Passwort des Benutzers.
-     */
     @Override
-    public void createUser(int userId, String username, String fullName, String email, String password) {
-        String sql = "INSERT INTO users (user_id, username, full_name, email, password) VALUES (?, ?, ?, ?, ?)";
+    public BaseUser createBaseUser(BaseUser user) {
+        String department = (user instanceof Employer)
+                ? ((Employer) user).getDepartment()
+                : null;
 
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(INSERT_USER, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1, userId);
-            ps.setString(2, username);
-            ps.setString(3, fullName);
-            ps.setString(4, email);
-            ps.setString(5, password);
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getFullName());
+            stmt.setString(3, user.getEmail());
+            stmt.setString(4, user.getPassword());
+            stmt.setString(5, department);
 
-            ps.executeUpdate();
+            stmt.executeUpdate();
+
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    user.setUserId(keys.getInt(1));
+                }
+            }
+            return user;
         } catch (SQLException e) {
             throw new RuntimeException("Fehler beim Erstellen des Benutzers", e);
         }
     }
 
-    /**
-     * Registriert einen neuen Benutzer in der Datenbank.
-     *
-     * @param username Der Benutzername des Benutzers.
-     * @param fullName Der vollständige Name des Benutzers.
-     * @param email    Die E-Mail-Adresse des Benutzers.
-     * @param password Das Passwort des Benutzers.
-     * @param role     Die Rolle des Benutzers (z.B. "user", "employer").
-     */
     @Override
-    public void registerUser(String username, String fullName, String email, String password, String role) {
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(INSERT_USER_SQL)) {
+    public void updateUser(BaseUser user) {
+        String department = (user instanceof Employer)
+                ? ((Employer) user).getDepartment()
+                : null;
 
-            ps.setString(1, username);
-            ps.setString(2, fullName);
-            ps.setString(3, email);
-            ps.setString(4, password);
-            ps.setString(5, role);
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(UPDATE_USER)) {
 
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Fehler bei der Registrierung des Benutzers", e);
-        }
-    }
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getFullName());
+            stmt.setString(3, user.getEmail());
+            stmt.setString(4, user.getPassword());
+            stmt.setString(5, department);
+            stmt.setInt(6, user.getUserId());
 
-    /**
-     * Registriert einen neuen Arbeitgeber in der Datenbank.
-     *
-     * @param username   Der Benutzername des Arbeitgebers.
-     * @param fullName   Der vollständige Name des Arbeitgebers.
-     * @param email      Die E-Mail-Adresse des Arbeitgebers.
-     * @param password   Das Passwort des Arbeitgebers.
-     * @param department Die Abteilung des Arbeitgebers.
-     */
-    @Override
-    public void registerEmployer(String username, String fullName, String email, String password, String department) {
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(INSERT_EMPLOYER_SQL)) {
-
-            ps.setString(1, username);
-            ps.setString(2, fullName);
-            ps.setString(3, email);
-            ps.setString(4, password);
-            ps.setString(5, "employer");
-            ps.setString(6, department);
-
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Fehler bei der Registrierung des Arbeitgebers", e);
-        }
-    }
-
-    /**
-     * Löscht einen Benutzer anhand seines Benutzernamens.
-     *
-     * @param username Der Benutzername des zu löschenden Benutzers.
-     * @return true, wenn der Benutzer erfolgreich gelöscht wurde, andernfalls false.
-     */
-    @Override
-    public boolean deleteUserByUsername(String username) {
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(DELETE_USER_BY_USERNAME_SQL)) {
-
-            ps.setString(1, username);
-            int rowsAffected = ps.executeUpdate();
-
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            throw new RuntimeException("Fehler beim Löschen des Benutzers", e);
-        }
-    }
-
-    /**
-     * Aktualisiert die Informationen eines Benutzers in der Datenbank.
-     *
-     * @param userId   Die ID des Benutzers.
-     * @param fullName Der vollständige Name des Benutzers.
-     * @param email    Die E-Mail-Adresse des Benutzers.
-     * @param password Das Passwort des Benutzers.
-     * @param role     Die Rolle des Benutzers (z.B. "user", "employer").
-     */
-    @Override
-    public void updateUser(int userId, String fullName, String email, String password, String role) {
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(UPDATE_USER_SQL)) {
-
-            ps.setString(1, fullName);
-            ps.setString(2, email);
-            ps.setString(3, password);
-            ps.setString(4, role);
-            ps.setInt(5, userId);
-
-            ps.executeUpdate();
+            stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Fehler beim Aktualisieren des Benutzers", e);
         }
     }
 
-    /**
-     * Löscht einen Benutzer anhand seiner ID.
-     *
-     * @param userId Die ID des zu löschenden Benutzers.
-     */
     @Override
     public void deleteUser(int userId) {
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement ps = connection.prepareStatement(DELETE_USER_SQL)) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(DELETE_USER)) {
 
-            ps.setInt(1, userId);
-            ps.executeUpdate();
+            stmt.setInt(1, userId);
+            stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Fehler beim Löschen des Benutzers", e);
+            throw new RuntimeException("Fehler beim Löschen des Benutzers nach ID", e);
         }
     }
 
+    @Override
+    public boolean deleteUserByUsername(String username) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(DELETE_USER_BY_USERNAME)) {
+
+            stmt.setString(1, username);
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Fehler beim Löschen des Benutzers nach Benutzername", e);
+        }
+    }
+
+    @Override
+    public void registerUser(String username, String fullName, String email, String password) {
+        // Normaler Benutzer: department = null
+        User user = new User(0, username, fullName, email, password);
+        createBaseUser(user);
+    }
+
+    @Override
+    public void registerEmployer(String username, String fullName, String email, String password, String department) {
+        // Arbeitgeber: department != null
+        Employer employer = new Employer(0, username, fullName, email, password, department);
+        createBaseUser(employer);
+    }
+
     /**
-     * Ordnet einen ResultSet-Eintrag einem BaseUser-Objekt zu.
-     *
-     * @param rs Das ResultSet, das Benutzerinformationen enthält.
-     * @return Ein BaseUser-Objekt, das die Informationen des Benutzers darstellt.
-     * @throws SQLException Wenn ein Fehler beim Zugriff auf das ResultSet auftritt.
+     * Hilfsmethode: Wandelt eine Zeile aus dem ResultSet in ein BaseUser-Objekt um.
      */
-    protected BaseUser mapResultSetToUser(ResultSet rs) throws SQLException {
+    private BaseUser mapResultSetToUser(ResultSet rs) throws SQLException {
         int userId = rs.getInt("user_id");
         String username = rs.getString("username");
         String fullName = rs.getString("full_name");
         String email = rs.getString("email");
         String password = rs.getString("password");
-        String role = rs.getString("role");
+        String department = rs.getString("department"); // null => normaler User, nicht null => Employer
 
-        if ("employer".equalsIgnoreCase(role)) {
-            String department = rs.getString("department"); // Angenommen, Abteilung wird für Arbeitgeber gespeichert
+        if (department != null) {
             return new Employer(userId, username, fullName, email, password, department);
         } else {
-            // Fehler behoben: userId zum User-Konstruktor hinzugefügt
-            return new User(userId, username, fullName, email, password, role);
+            return new User(userId, username, fullName, email, password);
         }
     }
 }

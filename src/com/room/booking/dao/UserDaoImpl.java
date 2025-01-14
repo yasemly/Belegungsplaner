@@ -2,41 +2,30 @@ package com.room.booking.dao;
 
 import com.room.booking.model.BaseUser;
 import com.room.booking.model.User;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of the UserDao interface for database access to user data.
- * Extends the BaseUserDaoImpl class to provide user-specific methods.
+ * Implementierung des UserDao-Interfaces für benutzer-spezifische Operationen.
  */
 public class UserDaoImpl extends BaseUserDaoImpl implements UserDao {
 
-    /**
-     * Retrieves a user by their ID.
-     *
-     * @param userId The ID of the user.
-     * @return The user if found, otherwise null.
-     */
     @Override
-    public User getUserById(int userId) {
-        BaseUser baseUser = super.getUserById(userId);
-        if (baseUser instanceof User) {
-            return (User) baseUser;
-        }
-        return null;
+    public List<User> getAllNormalUsers() {
+        // Ruft alle Benutzer ab und filtert nur die normalen User (department = null)
+        return super.getAllUsers().stream()
+                .filter(u -> u instanceof User && !(u instanceof com.room.booking.model.Employer))
+                .map(u -> (User) u)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Retrieves all users from the database.
-     *
-     * @return A list of all users.
-     */
     @Override
-    public List<BaseUser> getAllUsers() {
-        List<BaseUser> baseUsers = super.getAllUsers(); // Call method from BaseUserDaoImpl
-        return baseUsers.stream()
-                .filter(user -> user instanceof User)
-                .map(user -> (User) user)
-                .collect(Collectors.toList());
+    public User getUserById(int userId) {
+        BaseUser base = super.getUserById(userId);
+        if (base instanceof User) {
+            return (User) base;
+        }
+        return null; // oder wirf eine Ausnahme, wenn der Benutzer tatsächlich ein Employer ist
     }
 }
