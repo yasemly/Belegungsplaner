@@ -4,61 +4,106 @@ import com.room.booking.dao.BookingDao;
 import com.room.booking.dao.BookingDaoImpl;
 import com.room.booking.model.Booking;
 import com.room.booking.model.User;
+import com.room.booking.model.Room;
+import com.room.booking.dao.RoomDao;
+import com.room.booking.dao.RoomDaoImpl;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
 /**
- * Shows the user's existing bookings right away,
- * plus a button to create another booking.
+ * A nicer user overview: shows bookings in a table + a button to create a new booking.
  */
 public class UserOverviewFrame extends JFrame {
 
     private User user;
     private BookingDao bookingDao;
+    private RoomDao roomDao;
+
+    private JTable bookingTable;
+    private DefaultTableModel tableModel;
 
     public UserOverviewFrame(User user) {
         this.user = user;
         this.bookingDao = new BookingDaoImpl();
+        this.roomDao = new RoomDaoImpl();
 
-        setTitle("User Overview");
-        setSize(600, 400);
+        setTitle("User Overview - Bookings");
+        setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(null); // center on screen
 
-        JTextArea bookingsArea = new JTextArea();
-        bookingsArea.setEditable(false);
-        bookingsArea.append("Your existing bookings:\n\n");
+        // Layout: BorderLayout (table in center, button panel at bottom)
+        setLayout(new BorderLayout(10, 10));
 
-        try {
-            // BookingDao has getBookingsByUserId(int userId)
-            List<Booking> bookings = bookingDao.getBookingsByUserId(user.getUserId());
-            if (bookings.isEmpty()) {
-                bookingsArea.append("No bookings yet.\n");
-            } else {
-                for (Booking b : bookings) {
-                    bookingsArea.append("Booking ID: " + b.getBookingId() + "\n");
-                    bookingsArea.append("Room ID: " + b.getRoomId() + "\n");
-                    bookingsArea.append("Start: " + b.getStartTime() + "\n");
-                    bookingsArea.append("End: " + b.getEndTime() + "\n");
-                    bookingsArea.append("Purpose: " + b.getPurpose() + "\n");
-                    bookingsArea.append("Status: " + b.getStatus() + "\n\n");
-                }
-            }
-        } catch (Exception e) {
-            bookingsArea.append("Error loading bookings.\n" + e.getMessage());
-        }
+        // 1) Create table model
+        tableModel = new DefaultTableModel(new Object[] {
+                "Booking ID", "Room", "Start Time", "End Time", "Purpose", "Status"
+        }, 0);  // 0 = no rows initially
 
-        add(new JScrollPane(bookingsArea), BorderLayout.CENTER);
+        // 2) Create table from model
+        bookingTable = new JTable(tableModel);
+        bookingTable.setFillsViewportHeight(true);
 
-        // Button to create a new booking
-        JButton newBookingButton = new JButton("Create New Booking");
+        // 3) Put table in a scroll pane
+        JScrollPane scrollPane = new JScrollPane(bookingTable);
+        add(scrollPane, BorderLayout.CENTER);
+
+        // 4) Load user’s bookings into table
+        loadBookingsIntoTable();
+
+        // 5) Bottom panel with a button
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton newBookingButton = new JButton("Book a Room");
         newBookingButton.addActionListener(e -> {
-            // For instance, open an AddBookingFrame or a UserSearchFrame
+            // Open a new booking frame
             new AddBookingFrame(user).setVisible(true);
-            dispose(); // close this frame
+            // We can either keep this overview open or close it:
+            // dispose();
         });
-        add(newBookingButton, BorderLayout.SOUTH);
+        bottomPanel.add(newBookingButton);
+
+        add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    private void loadBookingsIntoTable() {
+        // Clear old rows if any
+        tableModel.setRowCount(0);
+
+        // Get the user’s bookings
+        List<Booking> bookings = bookingDao.getBookingsByUserId(user.getUserId());
+        for (Booking b : bookings) {
+            // Optional: fetch room name from roomDao if you want to display the room’s name
+            String roomName = "Room #" + b.getRoomId();
+            try {
+                Room room = roomDao.getRoomByName("???"); // If you have a method to get name by ID or vice versa
+                // Actually, you might want a getRoomById(...) method instead:
+                // Room room = roomDao.getRoomById(b.getRoomId());
+                // if (room != null) roomName = room.getRoomName();
+            } catch (Exception ex) {
+                // or ignore
+            }
+
+            // For now let's just show b.getRoomId():
+            // If you have a getRoomById(...) method, do that for a nicer name
+            Object[] rowData = {
+                    b.getBookingId(),
+                    b.getRoomId(), // or roomName
+                    b.getStartTime(),
+                    b.getEndTime(),
+                    b.getPurpose(),
+                    b.getStatus()
+            };
+            tableModel.addRow(rowData);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Quick test
+        User dummyUser = new User(1, "alice", "Alice Doe", "alice@example.com", "pw");
+        UserOverviewFrame frame = new UserOverviewFrame(dummyUser);
+        frame.setVisible(true);
     }
 }
