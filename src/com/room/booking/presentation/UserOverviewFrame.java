@@ -7,76 +7,58 @@ import com.room.booking.model.User;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 /**
- * GUI-Frame zur Anzeige der bestehenden Buchungen eines Benutzers und zum Erstellen neuer Buchungen
+ * Shows the user's existing bookings right away,
+ * plus a button to create another booking.
  */
 public class UserOverviewFrame extends JFrame {
 
-    // Der aktuell angemeldete Benutzer
     private User user;
-    // Data Access Object für Buchungen
     private BookingDao bookingDao;
 
-    /**
-     * Konstruktor für das UserOverviewFrame
-     *
-     * @param user Der aktuell angemeldete Benutzer
-     */
     public UserOverviewFrame(User user) {
         this.user = user;
         this.bookingDao = new BookingDaoImpl();
 
-        setTitle("Benutzerübersicht - Bestehende Buchungen");
+        setTitle("User Overview");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Textbereich für Buchungen erstellen
-        JTextArea bookingsTextArea = new JTextArea();
-        bookingsTextArea.setEditable(false);
-        bookingsTextArea.append("Bestehende Buchungen:\n");
+        JTextArea bookingsArea = new JTextArea();
+        bookingsArea.setEditable(false);
+        bookingsArea.append("Your existing bookings:\n\n");
 
-        // Buchungen für den Benutzer abrufen
         try {
+            // BookingDao has getBookingsByUserId(int userId)
             List<Booking> bookings = bookingDao.getBookingsByUserId(user.getUserId());
-            for (Booking booking : bookings) {
-                bookingsTextArea.append("Buchungs-ID: " + booking.getBookingId() + "\n");
-                bookingsTextArea.append("Raum-ID: " + booking.getRoomId() + "\n");
-                bookingsTextArea.append("Start: " + booking.getStartTime() + "\n");
-                bookingsTextArea.append("Ende: " + booking.getEndTime() + "\n");
-                bookingsTextArea.append("Zweck: " + booking.getPurpose() + "\n");
-                bookingsTextArea.append("Status: " + booking.getStatus() + "\n\n");
+            if (bookings.isEmpty()) {
+                bookingsArea.append("No bookings yet.\n");
+            } else {
+                for (Booking b : bookings) {
+                    bookingsArea.append("Booking ID: " + b.getBookingId() + "\n");
+                    bookingsArea.append("Room ID: " + b.getRoomId() + "\n");
+                    bookingsArea.append("Start: " + b.getStartTime() + "\n");
+                    bookingsArea.append("End: " + b.getEndTime() + "\n");
+                    bookingsArea.append("Purpose: " + b.getPurpose() + "\n");
+                    bookingsArea.append("Status: " + b.getStatus() + "\n\n");
+                }
             }
         } catch (Exception e) {
-            e.printStackTrace(); // Bessere Fehlerbehandlung in einer realen Anwendung wäre angebracht
-            bookingsTextArea.append("Fehler beim Abrufen der Buchungen.\n");
+            bookingsArea.append("Error loading bookings.\n" + e.getMessage());
         }
 
-        // Scrollbare Ansicht für den Textbereich erstellen
-        JScrollPane scrollPane = new JScrollPane(bookingsTextArea);
-        add(scrollPane, BorderLayout.CENTER);
+        add(new JScrollPane(bookingsArea), BorderLayout.CENTER);
 
-        // Button zum Erstellen einer neuen Buchung
-        JButton createBookingButton = new JButton("Neue Buchung erstellen");
-        createBookingButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openCreateBookingFrame();
-            }
+        // Button to create a new booking
+        JButton newBookingButton = new JButton("Create New Booking");
+        newBookingButton.addActionListener(e -> {
+            // For instance, open an AddBookingFrame or a UserSearchFrame
+            new AddBookingFrame(user).setVisible(true);
+            dispose(); // close this frame
         });
-        add(createBookingButton, BorderLayout.SOUTH);
-    }
-
-    /**
-     * Öffnet das UserSearchFrame, um eine neue Buchung zu erstellen, und schließt das aktuelle Fenster
-     */
-    private void openCreateBookingFrame() {
-        UserSearchFrame createBookingFrame = new UserSearchFrame(user);
-        createBookingFrame.setVisible(true);
-        this.dispose();
+        add(newBookingButton, BorderLayout.SOUTH);
     }
 }

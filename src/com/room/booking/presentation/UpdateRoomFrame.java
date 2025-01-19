@@ -17,10 +17,6 @@ public class UpdateRoomFrame extends JFrame {
     private JTextField locationField;
     private JTextField floorField;
 
-    /**
-     * Konstruktor für UpdateRoomFrame.
-     * Initialisiert das Fenster und seine Komponenten.
-     */
     public UpdateRoomFrame() {
         setTitle("Raum aktualisieren");
         setSize(400, 300);
@@ -42,7 +38,7 @@ public class UpdateRoomFrame extends JFrame {
         capacityField = new JTextField();
         panel.add(capacityField);
 
-        panel.add(new JLabel("Ausstattung:"));
+        panel.add(new JLabel("Ausstattung (csv):"));
         featuresField = new JTextField();
         panel.add(featuresField);
 
@@ -66,9 +62,6 @@ public class UpdateRoomFrame extends JFrame {
         add(panel);
     }
 
-    /**
-     * Methode zum Aktualisieren der Rauminformationen.
-     */
     private void updateRoom() {
         try {
             int roomId = Integer.parseInt(roomIdField.getText());
@@ -76,11 +69,9 @@ public class UpdateRoomFrame extends JFrame {
             int capacity = Integer.parseInt(capacityField.getText().trim());
             String features = featuresField.getText().trim();
             String location = locationField.getText().trim();
-            String floor = floorField.getText().trim();
+            int floor = Integer.parseInt(floorField.getText().trim());
 
-            // Hier die Logik zum Aktualisieren des Raums in der Datenbank implementieren
-            // Beispielsweise einen Service-Aufruf zur Aktualisierung des Raums
-
+            // DB or service call
             JOptionPane.showMessageDialog(this, "Raum mit ID " + roomId + " aktualisiert.");
             clearFields();
         } catch (NumberFormatException e) {
@@ -88,9 +79,6 @@ public class UpdateRoomFrame extends JFrame {
         }
     }
 
-    /**
-     * Methode zum Leeren der Eingabefelder nach erfolgreicher Aktualisierung.
-     */
     private void clearFields() {
         roomIdField.setText("");
         roomNameField.setText("");

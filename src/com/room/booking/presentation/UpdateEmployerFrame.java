@@ -17,10 +17,6 @@ public class UpdateEmployerFrame extends JFrame {
     private JPasswordField passwordField;
     private JTextField departmentField;
 
-    /**
-     * Konstruktor für UpdateEmployerFrame.
-     * Initialisiert das Fenster und seine Komponenten.
-     */
     public UpdateEmployerFrame() {
         setTitle("Arbeitgeber aktualisieren");
         setSize(400, 350);
@@ -66,9 +62,6 @@ public class UpdateEmployerFrame extends JFrame {
         add(panel);
     }
 
-    /**
-     * Methode zum Aktualisieren der Arbeitgeberinformationen.
-     */
     private void updateEmployer() {
         try {
             int employerId = Integer.parseInt(employerIdField.getText());
@@ -78,9 +71,7 @@ public class UpdateEmployerFrame extends JFrame {
             String password = new String(passwordField.getPassword());
             String department = departmentField.getText().trim();
 
-            // Hier die Logik zum Aktualisieren des Arbeitgebers in der Datenbank implementieren
-            // Beispielsweise einen Service-Aufruf zur Aktualisierung des Arbeitgebers
-
+            // DB or service call
             JOptionPane.showMessageDialog(this, "Arbeitgeber mit ID " + employerId + " aktualisiert.");
             clearFields();
         } catch (NumberFormatException e) {
@@ -88,9 +79,6 @@ public class UpdateEmployerFrame extends JFrame {
         }
     }
 
-    /**
-     * Methode zum Leeren der Eingabefelder nach erfolgreicher Aktualisierung.
-     */
     private void clearFields() {
         employerIdField.setText("");
         usernameField.setText("");

@@ -1,57 +1,49 @@
 package com.room.booking.presentation;
 
-import com.room.booking.dao.BaseUserDao;
-import com.room.booking.dao.BaseUserDaoImpl;
+import com.room.booking.dao.UserDao;
+import com.room.booking.dao.UserDaoImpl;
+import com.room.booking.model.User;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-/**
- * GUI-Frame zur Registrierung eines neuen Benutzers
- */
 public class RegistrationFrame extends JFrame {
 
-    // Swing-Komponenten
     private JTextField usernameField;
     private JTextField fullNameField;
     private JTextField emailField;
     private JPasswordField passwordField;
 
-    /**
-     * Konstruktor für das RegistrationFrame.
-     * Initialisiert die Komponenten und das Layout des Frames
-     */
+    private UserDao userDao;
+
     public RegistrationFrame() {
-        setTitle("Benutzerregistrierung");
+        userDao = new UserDaoImpl();
+
+        setTitle("User Registration");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new GridLayout(5, 2, 10, 10));
 
-        // Benutzername
-        add(new JLabel("Benutzername:"));
+        add(new JLabel("Username:"));
         usernameField = new JTextField();
         add(usernameField);
 
-        // Vollständiger Name
-        add(new JLabel("Vollständiger Name:"));
+        add(new JLabel("Full Name:"));
         fullNameField = new JTextField();
         add(fullNameField);
 
-        // E-Mail
-        add(new JLabel("E-Mail:"));
+        add(new JLabel("Email:"));
         emailField = new JTextField();
         add(emailField);
 
-        // Passwort
-        add(new JLabel("Passwort:"));
+        add(new JLabel("Password:"));
         passwordField = new JPasswordField();
         add(passwordField);
 
-        // Registrieren-Button
-        JButton registerButton = new JButton("Registrieren");
+        JButton registerButton = new JButton("Register");
         add(registerButton);
         registerButton.addActionListener(new ActionListener() {
             @Override
@@ -60,51 +52,33 @@ public class RegistrationFrame extends JFrame {
             }
         });
 
-        // Zurück zum Anmelde-Fenster Button
-        JButton loginButton = new JButton("Zurück zur Anmeldung");
-        add(loginButton);
-        loginButton.addActionListener(new ActionListener() {
+        JButton backButton = new JButton("Back to Login");
+        add(backButton);
+        backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                openLoginFrame();
+                new LoginFrame().setVisible(true);
+                dispose();
             }
         });
     }
 
-    /**
-     * Registriert einen neuen Benutzer in der Datenbank
-     */
     private void registerUser() {
-        String username = usernameField.getText().trim();
-        String fullName = fullNameField.getText().trim();
-        String email = emailField.getText().trim();
-        String password = new String(passwordField.getPassword());
+        try {
+            String username = usernameField.getText().trim();
+            String fullName = fullNameField.getText().trim();
+            String email = emailField.getText().trim();
+            String password = new String(passwordField.getPassword());
 
-        BaseUserDao userDao = new BaseUserDaoImpl(); // Use BaseUserDao for registration
-        String role = "user"; // Set default role or get from user input if needed
-        userDao.registerUser(username, fullName, email, password);
-        JOptionPane.showMessageDialog(this, "Registrierung erfolgreich!");
+            User newUser = new User(0, username, fullName, email, password);
+            userDao.createUser(newUser);
 
-        // Weiterleitung zur Anmeldeseite nach der Registrierung
-        openLoginFrame();
+            JOptionPane.showMessageDialog(this, "Registration successful! Please login.");
+            new LoginFrame().setVisible(true);
+            dispose();
 
-        // Schließen des Registrierungs-Frames nach der Registrierung (optional)
-        dispose();
-    }
-
-    /**
-     * Öffnet das LoginFrame und schließt das aktuelle Fenster
-     */
-    private void openLoginFrame() {
-        LoginFrame loginFrame = new LoginFrame();
-        loginFrame.setVisible(true);
-        dispose(); // Schließen des Registrierungs-Frames nach Rückkehr zur Anmeldung
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            RegistrationFrame registrationFrame = new RegistrationFrame();
-            registrationFrame.setVisible(true);
-        });
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error registering user: " + ex.getMessage());
+        }
     }
 }

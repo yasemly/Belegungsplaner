@@ -12,10 +12,6 @@ public class DeleteUserFrame extends JFrame {
 
     private JTextField usernameField;
 
-    /**
-     * Konstruktor für DeleteUserFrame.
-     * Initialisiert das Fenster und seine Komponenten.
-     */
     public DeleteUserFrame() {
         setTitle("Benutzer löschen");
         setSize(300, 150);
@@ -41,28 +37,14 @@ public class DeleteUserFrame extends JFrame {
         add(panel);
     }
 
-    /**
-     * Methode zum Löschen eines Benutzers anhand des eingegebenen Benutzernamens.
-     */
     private void deleteUser() {
         String username = usernameField.getText().trim();
-
         if (username.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Bitte geben Sie einen gültigen Benutzernamen ein.");
             return;
         }
-
-        // Hier die Logik zum Löschen des Benutzers in der Datenbank implementieren
-        // Beispielsweise einen Service-Aufruf zur Löschung des Benutzers
-
+        // DB or service logic
         JOptionPane.showMessageDialog(this, "Benutzer mit dem Namen " + username + " gelöscht.");
-        clearFields();
-    }
-
-    /**
-     * Methode zum Leeren des Eingabefelds nach erfolgreicher Löschung.
-     */
-    private void clearFields() {
         usernameField.setText("");
     }
 

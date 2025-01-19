@@ -1,9 +1,7 @@
 package com.room.booking.presentation;
 
-import com.room.booking.dao.BaseUserDao;
-import com.room.booking.dao.BaseUserDaoImpl;
-import com.room.booking.model.BaseUser;
-import com.room.booking.model.Employer;
+import com.room.booking.dao.UserDao;
+import com.room.booking.dao.UserDaoImpl;
 import com.room.booking.model.User;
 
 import javax.swing.*;
@@ -12,23 +10,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * GUI-Frame für die Anmeldung von Benutzern.
+ * GUI-Frame for logging in as a normal user (or for registering).
  */
 public class LoginFrame extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
 
-    // Data Access Object für Benutzer
-    private BaseUserDao userDao;
+    private UserDao userDao;
 
-    /**
-     * Konstruktor für das LoginFrame.
-     * Initialisiert die Komponenten und das Layout des Frames.
-     */
     public LoginFrame() {
-        userDao = new BaseUserDaoImpl();
+        userDao = new UserDaoImpl();
 
-        setTitle("Loginpage");
+        setTitle("Login Page");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -36,58 +29,49 @@ public class LoginFrame extends JFrame {
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(10,10,10,10);
 
-        // Benutzername-Label
-        JLabel usernameLabel = new JLabel("Username:");
+        JLabel userLabel = new JLabel("Username:");
         gbc.gridx = 0;
         gbc.gridy = 0;
-        add(usernameLabel, gbc);
+        add(userLabel, gbc);
 
-        // Benutzername-Eingabefeld
         usernameField = new JTextField(20);
         gbc.gridx = 1;
         gbc.gridy = 0;
         add(usernameField, gbc);
 
-        // Passwort-Label
-        JLabel passwordLabel = new JLabel("Password:");
+        JLabel passLabel = new JLabel("Password:");
         gbc.gridx = 0;
         gbc.gridy = 1;
-        add(passwordLabel, gbc);
+        add(passLabel, gbc);
 
-        // Passwort-Eingabefeld
         passwordField = new JPasswordField(20);
         gbc.gridx = 1;
         gbc.gridy = 1;
         add(passwordField, gbc);
 
-        // Anmelden-Button
         JButton loginButton = new JButton("Login");
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
         add(loginButton, gbc);
 
-        // Registrieren-Button
-        JButton backButton = new JButton("Register");
+        JButton registerButton = new JButton("Register");
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        add(backButton, gbc);
+        add(registerButton, gbc);
 
-        // ActionListener für den Login-Button
+        // Actions
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                loginUser();
+                attemptLogin();
             }
         });
 
-        // ActionListener für den Register-Button
-        backButton.addActionListener(new ActionListener() {
+        registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new RegistrationFrame().setVisible(true);
@@ -96,20 +80,15 @@ public class LoginFrame extends JFrame {
         });
     }
 
-    /**
-     * Prüft die eingegebenen Anmeldedaten und öffnet das entsprechende Fenster für User/Employer.
-     */
-    private void loginUser() {
-        String username = usernameField.getText();
+    private void attemptLogin() {
+        String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
 
-        BaseUser user = userDao.getUserByUsernameAndPassword(username, password);
+        // Try to find user in "users" table
+        User user = userDao.getUserByUsernameAndPassword(username, password);
         if (user != null) {
-            if (user instanceof Employer) {
-                new EmployerFrame((Employer) user).setVisible(true);
-            } else if (user instanceof User) {
-                new UserOverviewFrame((User) user).setVisible(true);
-            }
+            // Success => open user overview
+            new UserOverviewFrame(user).setVisible(true);
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Invalid username or password.");
@@ -118,9 +97,8 @@ public class LoginFrame extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            LoginFrame loginFrame = new LoginFrame();
-            loginFrame.setVisible(true);
+            LoginFrame frame = new LoginFrame();
+            frame.setVisible(true);
         });
     }
-
 }

@@ -16,10 +16,6 @@ public class UpdateUserFrame extends JFrame {
     private JTextField emailField;
     private JPasswordField passwordField;
 
-    /**
-     * Konstruktor für UpdateUserFrame.
-     * Initialisiert das Fenster und seine Komponenten.
-     */
     public UpdateUserFrame() {
         setTitle("Benutzer aktualisieren");
         setSize(400, 300);
@@ -61,9 +57,6 @@ public class UpdateUserFrame extends JFrame {
         add(panel);
     }
 
-    /**
-     * Methode zum Aktualisieren der Benutzerinformationen.
-     */
     private void updateUser() {
         try {
             int userId = Integer.parseInt(userIdField.getText());
@@ -72,9 +65,7 @@ public class UpdateUserFrame extends JFrame {
             String email = emailField.getText().trim();
             String password = new String(passwordField.getPassword());
 
-            // Hier die Logik zum Aktualisieren des Benutzers in der Datenbank implementieren
-            // Beispielsweise einen Service-Aufruf zur Aktualisierung des Benutzers
-
+            // DB or service call
             JOptionPane.showMessageDialog(this, "Benutzer mit ID " + userId + " aktualisiert.");
             clearFields();
         } catch (NumberFormatException e) {
@@ -82,9 +73,6 @@ public class UpdateUserFrame extends JFrame {
         }
     }
 
-    /**
-     * Methode zum Leeren der Eingabefelder nach erfolgreicher Aktualisierung.
-     */
     private void clearFields() {
         userIdField.setText("");
         usernameField.setText("");

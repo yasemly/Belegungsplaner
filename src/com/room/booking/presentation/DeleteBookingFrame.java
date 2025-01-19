@@ -12,10 +12,6 @@ public class DeleteBookingFrame extends JFrame {
 
     private JTextField bookingIdField;
 
-    /**
-     * Konstruktor für DeleteBookingFrame.
-     * Initialisiert das Fenster und seine Komponenten.
-     */
     public DeleteBookingFrame() {
         setTitle("Buchung löschen");
         setSize(300, 150);
@@ -41,16 +37,10 @@ public class DeleteBookingFrame extends JFrame {
         add(panel);
     }
 
-    /**
-     * Methode zum Löschen einer Buchung anhand der eingegebenen Buchungs-ID.
-     */
     private void deleteBooking() {
         try {
             int bookingId = Integer.parseInt(bookingIdField.getText());
-
-            // Hier die Logik zum Löschen der Buchung in der Datenbank implementieren
-            // Beispielsweise einen Service-Aufruf zur Löschung der Buchung
-
+            // DB logic or service call
             JOptionPane.showMessageDialog(this, "Buchung mit ID " + bookingId + " gelöscht.");
             clearFields();
         } catch (NumberFormatException e) {
@@ -58,9 +48,6 @@ public class DeleteBookingFrame extends JFrame {
         }
     }
 
-    /**
-     * Methode zum Leeren des Eingabefelds nach erfolgreicher Löschung.
-     */
     private void clearFields() {
         bookingIdField.setText("");
     }

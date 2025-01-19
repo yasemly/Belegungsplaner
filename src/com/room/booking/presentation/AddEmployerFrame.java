@@ -16,10 +16,6 @@ public class AddEmployerFrame extends JFrame {
     private JPasswordField passwordField;
     private JTextField departmentField;
 
-    /**
-     * Konstruktor für AddEmployerFrame.
-     * Initialisiert das Fenster und seine Komponenten.
-     */
     public AddEmployerFrame() {
         setTitle("Arbeitgeber hinzufügen");
         setSize(400, 300);
@@ -61,27 +57,22 @@ public class AddEmployerFrame extends JFrame {
         add(panel);
     }
 
-    /**
-     * Methode zum Hinzufügen eines neuen Arbeitgebers.
-     * Erfasst die Eingaben des Benutzers und führt die Registrierung durch.
-     */
     private void addEmployer() {
-        String username = usernameField.getText();
-        String fullName = fullNameField.getText();
-        String email = emailField.getText();
-        String password = new String(passwordField.getPassword());
-        String department = departmentField.getText();
+        try {
+            String username = usernameField.getText();
+            String fullName = fullNameField.getText();
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+            String department = departmentField.getText();
 
-        // Logik zum Hinzufügen des Arbeitgebers in die Datenbank oder andere Aktionen.
-        // Hier könnten Sie einen Service-Aufruf hinzufügen, um den Arbeitgeber zu registrieren.
-
-        JOptionPane.showMessageDialog(this, "Arbeitgeber hinzugefügt: " + fullName);
-        clearFields();
+            // DB logic or service call
+            JOptionPane.showMessageDialog(this, "Arbeitgeber hinzugefügt: " + fullName);
+            clearFields();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Fehler beim Hinzufügen des Arbeitgebers: " + ex.getMessage());
+        }
     }
 
-    /**
-     * Methode zum Leeren der Eingabefelder nach erfolgreicher Registrierung.
-     */
     private void clearFields() {
         usernameField.setText("");
         fullNameField.setText("");

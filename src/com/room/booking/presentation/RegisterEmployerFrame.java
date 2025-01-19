@@ -1,7 +1,7 @@
 package com.room.booking.presentation;
 
-import com.room.booking.dao.BaseUserDao;
-import com.room.booking.dao.BaseUserDaoImpl;
+import com.room.booking.dao.EmployerDao;
+import com.room.booking.dao.EmployerDaoImpl;
 import com.room.booking.model.Employer;
 
 import javax.swing.*;
@@ -9,61 +9,46 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-/**
- * GUI-Frame zur Registrierung eines neuen Arbeitgebers
- */
 public class RegisterEmployerFrame extends JFrame {
 
-    // Swing-Komponenten
     private JTextField usernameField;
     private JTextField fullNameField;
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JTextField departmentField; // Added for department input
+    private JTextField departmentField;
 
-    // Data Access Object für Benutzer
-    private BaseUserDao userDao;
+    private EmployerDao employerDao;
 
-    /**
-     * Konstruktor für das RegisterEmployerFrame.
-     * Initialisiert die Komponenten und das Layout des Frames
-     */
     public RegisterEmployerFrame() {
-        userDao = new BaseUserDaoImpl();
+        employerDao = new EmployerDaoImpl();
 
-        setTitle("Arbeitgeber-Registrierung");
-        setSize(400, 350); // Increased height to accommodate department field
+        setTitle("Employer Registration");
+        setSize(400, 350);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new GridLayout(6, 2, 10, 10));
 
-        // Benutzername
-        add(new JLabel("Benutzername:"));
+        add(new JLabel("Username:"));
         usernameField = new JTextField();
         add(usernameField);
 
-        // Vollständiger Name
-        add(new JLabel("Vollständiger Name:"));
+        add(new JLabel("Full Name:"));
         fullNameField = new JTextField();
         add(fullNameField);
 
-        // E-Mail
-        add(new JLabel("E-Mail:"));
+        add(new JLabel("Email:"));
         emailField = new JTextField();
         add(emailField);
 
-        // Passwort
-        add(new JLabel("Passwort:"));
+        add(new JLabel("Password:"));
         passwordField = new JPasswordField();
         add(passwordField);
 
-        // Abteilung (neu hinzugefügt)
-        add(new JLabel("Abteilung:"));
+        add(new JLabel("Department:"));
         departmentField = new JTextField();
         add(departmentField);
 
-        // Registrieren-Button
-        JButton registerButton = new JButton("Registrieren");
+        JButton registerButton = new JButton("Register");
         add(registerButton);
         registerButton.addActionListener(new ActionListener() {
             @Override
@@ -72,57 +57,33 @@ public class RegisterEmployerFrame extends JFrame {
             }
         });
 
-        // Zurück zum Arbeitgeber-Fenster Button
-        JButton backButton = new JButton("Zurück zum Arbeitgeber-Fenster");
+        JButton backButton = new JButton("Back to Login");
         add(backButton);
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                openEmployerFrame();
+                new LoginFrame().setVisible(true);
+                dispose();
             }
         });
     }
 
-    /**
-     * Registriert einen neuen Arbeitgeber in der Datenbank
-     */
     private void registerEmployer() {
-        String username = usernameField.getText().trim();
-        String fullName = fullNameField.getText().trim();
-        String email = emailField.getText().trim();
-        String password = new String(passwordField.getPassword());
-        String department = departmentField.getText().trim(); // Get department from input
+        try {
+            String username = usernameField.getText().trim();
+            String fullName = fullNameField.getText().trim();
+            String email = emailField.getText().trim();
+            String password = new String(passwordField.getPassword());
+            String department = departmentField.getText().trim();
 
-        // Register the employer using BaseUserDaoImpl (korrigiert)
-        Employer employer = new Employer(0, username, fullName, email, password, department);
-        userDao.createBaseUser(employer);
+            Employer emp = new Employer(0, username, fullName, email, password, department);
+            employerDao.createEmployer(emp);
 
-
-        JOptionPane.showMessageDialog(this, "Arbeitgeber-Registrierung erfolgreich!");
-
-        // Redirect to employer frame after registration
-        openEmployerFrame();
-
-        // Optionally, close the registration frame after registration
-        dispose();
-    }
-
-    /**
-     * Öffnet das EmployerFrame und schließt das aktuelle Fenster
-     */
-    private void openEmployerFrame() {
-        // Hier sollten Sie den tatsächlichen Benutzer übergeben, nicht einen neuen erstellen
-        // Verwenden Sie Employer, da Sie zum EmployerFrame wechseln
-        EmployerFrame employerFrame = new EmployerFrame(new Employer(1, "john.doe@example.com", "John Doe", "john.doe@example.com", "password", "IT"));
-        employerFrame.setVisible(true);
-        dispose();
-    }
-
-    // ... (main-Methode bleibt unverändert)
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            RegisterEmployerFrame registrationFrame = new RegisterEmployerFrame();
-            registrationFrame.setVisible(true);
-        });
+            JOptionPane.showMessageDialog(this, "Employer registration successful!");
+            new LoginFrame().setVisible(true);
+            dispose();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error registering employer: " + ex.getMessage());
+        }
     }
 }

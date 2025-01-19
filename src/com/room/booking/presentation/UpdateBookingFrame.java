@@ -22,10 +22,6 @@ public class UpdateBookingFrame extends JFrame {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    /**
-     * Konstruktor für UpdateBookingFrame.
-     * Initialisiert das Fenster und seine Komponenten.
-     */
     public UpdateBookingFrame() {
         setTitle("Buchung aktualisieren");
         setSize(500, 300);
@@ -75,9 +71,6 @@ public class UpdateBookingFrame extends JFrame {
         add(panel);
     }
 
-    /**
-     * Methode zum Aktualisieren der Buchungsinformationen.
-     */
     private void updateBooking() {
         try {
             int bookingId = Integer.parseInt(bookingIdField.getText());
@@ -88,19 +81,14 @@ public class UpdateBookingFrame extends JFrame {
             String purpose = purposeField.getText().trim();
             String status = statusField.getText().trim();
 
-            // Hier die Logik zum Aktualisieren der Buchung in der Datenbank implementieren
-            // Beispielsweise einen Service-Aufruf zur Aktualisierung der Buchung
-
+            // DB or service call here
             JOptionPane.showMessageDialog(this, "Buchung mit ID " + bookingId + " aktualisiert.");
             clearFields();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Bitte geben Sie gültige Werte ein.");
+            JOptionPane.showMessageDialog(this, "Bitte geben Sie gültige Werte ein. " + e.getMessage());
         }
     }
 
-    /**
-     * Methode zum Leeren der Eingabefelder nach erfolgreicher Aktualisierung.
-     */
     private void clearFields() {
         bookingIdField.setText("");
         roomIdField.setText("");

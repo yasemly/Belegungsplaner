@@ -1,20 +1,13 @@
 package com.room.booking.dao;
 
 import com.room.booking.model.Employer;
-import java.util.List;
 
-/**
- * Spezielles DAO-Interface für Arbeitgeber.
- */
-public interface EmployerDao extends BaseUserDao {
-
-    /**
-     * Gibt nur die Arbeitgeber (wo department nicht null ist) zurück.
-     */
-    List<Employer> getAllEmployers();
-
-    /**
-     * Gibt einen Arbeitgeber anhand der ID zurück.
-     */
+public interface EmployerDao {
+    Employer createEmployer(Employer employer);
+    Employer getEmployerByUsernameAndPassword(String username, String password);
     Employer getEmployerById(int employerId);
+    void updateEmployer(Employer employer);
+    void deleteEmployer(int employerId);
+    boolean deleteEmployerByUsername(String username);
+
 }

@@ -17,31 +17,30 @@ public class RoomDaoImpl implements RoomDao {
 
     private static final Logger logger = Logger.getLogger(RoomDaoImpl.class.getName());
 
-    // SQL-Abfragen
-    private static final String INSERT_ROOM_SQL = "INSERT INTO rooms (room_name, capacity, room_features, location, rating, floor) VALUES (?, ?, ?, ?, ?, ?)";
-    private static final String DELETE_ROOM_SQL = "DELETE FROM rooms WHERE room_id = ?";
-    private static final String SELECT_ALL_ROOMS_SQL = "SELECT * FROM rooms";
-    private static final String SELECT_ROOMS_BY_CRITERIA_SQL = "SELECT * FROM rooms WHERE 1=1"; // Basis für dynamische Suche
-    private static final String INSERT_BOOKING_SQL = "INSERT INTO bookings (user_id, room_id, booking_start, booking_end) VALUES (?, ?, ?, ?)";
-    private static final String SELECT_ROOM_BY_NAME_SQL = "SELECT * FROM rooms WHERE room_name = ?";
-    private static final String SELECT_ROOM_ID_BY_NAME_SQL = "SELECT room_id FROM rooms WHERE room_name = ?";
+    private static final String INSERT_ROOM_SQL =
+            "INSERT INTO rooms (room_name, capacity, room_features, location, rating, floor) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String DELETE_ROOM_SQL =
+            "DELETE FROM rooms WHERE room_id = ?";
+    private static final String SELECT_ALL_ROOMS_SQL =
+            "SELECT * FROM rooms";
+    private static final String SELECT_ROOMS_BY_CRITERIA_SQL =
+            "SELECT * FROM rooms WHERE 1=1";
+    private static final String INSERT_BOOKING_SQL =
+            "INSERT INTO bookings (user_id, room_id, booking_start, booking_end) VALUES (?, ?, ?, ?)";
+    private static final String SELECT_ROOM_BY_NAME_SQL =
+            "SELECT * FROM rooms WHERE room_name = ?";
+    private static final String SELECT_ROOM_ID_BY_NAME_SQL =
+            "SELECT room_id FROM rooms WHERE room_name = ?";
 
-    /**
-     * Holt einen Raum anhand seines Namens.
-     *
-     * @param name Der Name des Raums
-     * @return Der Raum, falls gefunden, sonst null
-     */
     @Override
     public Room getRoomByName(String name) {
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ROOM_BY_NAME_SQL)) {
 
             preparedStatement.setString(1, name);
-
             try (ResultSet rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToRoom(rs); // Hilfsmethode zur Abbildung des ResultSets
+                    return mapResultSetToRoom(rs);
                 }
             }
         } catch (SQLException e) {
@@ -50,14 +49,6 @@ public class RoomDaoImpl implements RoomDao {
         return null;
     }
 
-    /**
-     * Bucht einen Raum für einen bestimmten Benutzer.
-     *
-     * @param userId    Die ID des Benutzers, der den Raum bucht
-     * @param roomId    Die ID des zu buchenden Raums
-     * @param startTime Der Beginn der Buchung
-     * @param endTime   Das Ende der Buchung
-     */
     @Override
     public void bookRoom(int userId, int roomId, LocalDateTime startTime, LocalDateTime endTime) {
         try (Connection connection = DBConnection.getConnection();
@@ -65,8 +56,8 @@ public class RoomDaoImpl implements RoomDao {
 
             statement.setInt(1, userId);
             statement.setInt(2, roomId);
-            statement.setObject(3, Timestamp.valueOf(startTime));
-            statement.setObject(4, Timestamp.valueOf(endTime));
+            statement.setTimestamp(3, Timestamp.valueOf(startTime));
+            statement.setTimestamp(4, Timestamp.valueOf(endTime));
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -74,11 +65,6 @@ public class RoomDaoImpl implements RoomDao {
         }
     }
 
-    /**
-     * Fügt einen neuen Raum zur Datenbank hinzu
-     *
-     * @param room Der hinzuzufügende Raum
-     */
     @Override
     public void addRoom(Room room) {
         try (Connection connection = DBConnection.getConnection();
@@ -97,11 +83,6 @@ public class RoomDaoImpl implements RoomDao {
         }
     }
 
-    /**
-     * Löscht einen Raum aus der Datenbank
-     *
-     * @param roomId Die ID des zu löschenden Raums
-     */
     @Override
     public void deleteRoom(int roomId) {
         try (Connection connection = DBConnection.getConnection();
@@ -114,18 +95,6 @@ public class RoomDaoImpl implements RoomDao {
         }
     }
 
-    /**
-     * Sucht nach verfügbaren Räumen basierend auf bestimmten Kriterien
-     *
-     * @param capacity      Die Mindestkapazität des Raums
-     * @param location      Der Standort des Raums
-     * @param features      Eine Liste der gewünschten Ausstattungsmerkmale
-     * @param rating        Die Mindestbewertung des Raums
-     * @param floor         Die Etage, auf der sich der Raum befindet
-     * @param availableFrom Der früheste Zeitpunkt, ab dem der Raum verfügbar sein soll
-     * @param availableTo   Der späteste Zeitpunkt, bis zu dem der Raum verfügbar sein soll
-     * @return Eine Liste der gefundenen Räume
-     */
     @Override
     public List<Room> searchRooms(int capacity, String location, List<String> features,
                                   double rating, int floor, LocalDateTime availableFrom, LocalDateTime availableTo) {
@@ -154,20 +123,22 @@ public class RoomDaoImpl implements RoomDao {
             params.add(floor);
         }
 
-        // Berücksichtigen Sie Buchungen bei der Verfügbarkeitsprüfung
+        // Check for availability (bookings table). This is a naive approach:
         if (availableFrom != null && availableTo != null) {
-            query.append(" AND NOT EXISTS (");
-            query.append(" SELECT 1 FROM bookings b ");
-            query.append(" WHERE b.room_id = rooms.room_id ");
-            query.append(" AND ((b.booking_start <= ? AND b.booking_end >= ?)"); // Überlappungsprüfung
-            query.append(" OR (b.booking_start <= ? AND b.booking_end >= ?))");
-            query.append(")");
+            query.append(" AND NOT EXISTS (")
+                    .append(" SELECT 1 FROM bookings b ")
+                    .append(" WHERE b.room_id = rooms.room_id ")
+                    .append(" AND ( (b.booking_start <= ? AND b.booking_end >= ?) ")
+                    .append(" OR (b.booking_start <= ? AND b.booking_end >= ?))")
+                    .append(")");
+            // Overlap check
             params.add(Timestamp.valueOf(availableTo));
             params.add(Timestamp.valueOf(availableFrom));
             params.add(Timestamp.valueOf(availableFrom));
             params.add(Timestamp.valueOf(availableTo));
         }
 
+        // Check each requested feature
         for (String feature : features) {
             query.append(" AND room_features LIKE ?");
             params.add("%" + feature + "%");
@@ -182,7 +153,7 @@ public class RoomDaoImpl implements RoomDao {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    rooms.add(mapResultSetToRoom(rs)); // Hilfsmethode zur Abbildung des ResultSets
+                    rooms.add(mapResultSetToRoom(rs));
                 }
             }
         } catch (SQLException e) {
@@ -192,21 +163,15 @@ public class RoomDaoImpl implements RoomDao {
         return rooms;
     }
 
-    /**
-     * Holt alle Räume aus der Datenbank
-     *
-     * @return Eine Liste aller Räume
-     */
     @Override
     public List<Room> getAllRooms() {
         List<Room> rooms = new ArrayList<>();
-
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement stmt = connection.prepareStatement(SELECT_ALL_ROOMS_SQL);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                rooms.add(mapResultSetToRoom(rs)); // Hilfsmethode zur Abbildung des ResultSets
+                rooms.add(mapResultSetToRoom(rs));
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Error fetching all rooms", e);
@@ -214,12 +179,6 @@ public class RoomDaoImpl implements RoomDao {
         return rooms;
     }
 
-    /**
-     * Holt die ID eines Raums anhand seines Namens
-     *
-     * @param roomName Der Name des Raums
-     * @return Die ID des Raums, falls gefunden, sonst -1
-     */
     @Override
     public int getRoomId(String roomName) {
         int roomId = -1;
@@ -237,7 +196,6 @@ public class RoomDaoImpl implements RoomDao {
         return roomId;
     }
 
-    // Hilfsmethode zum Mappen eines ResultSet auf ein Room-Objekt
     private Room mapResultSetToRoom(ResultSet rs) throws SQLException {
         int roomId = rs.getInt("room_id");
         String roomName = rs.getString("room_name");
@@ -249,7 +207,11 @@ public class RoomDaoImpl implements RoomDao {
 
         List<String> roomFeatureList = new ArrayList<>();
         if (roomFeatures != null && !roomFeatures.isEmpty()) {
-            roomFeatureList = new ArrayList<>(List.of(roomFeatures.split(",")));
+            // split on comma
+            String[] feats = roomFeatures.split(",");
+            for (String f : feats) {
+                roomFeatureList.add(f.trim());
+            }
         }
 
         return new Room(roomId, roomName, capacity, roomFeatureList, location, rating, floor);
