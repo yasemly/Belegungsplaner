@@ -27,6 +27,11 @@ public class Room {
         this.floor = floor;
     }
 
+    @Override
+    public String toString() {
+        // Return just the name (or any descriptive text you like)
+        return roomName;
+    }
     // Getters and Setters
     public int getRoomId() {
         return roomId;

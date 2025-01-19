@@ -5,22 +5,54 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Schnittstelle für den Zugriff auf Raumdaten in der Datenbank
+ * Schnittstelle für den Zugriff auf Raumdaten in der Datenbank.
  */
 public interface RoomDao {
 
-    void bookRoom(int userId, int roomId, LocalDateTime startTime, LocalDateTime endTime);
-
-    void addRoom(Room room);
-
-    void deleteRoom(int roomId);
-
-    List<Room> searchRooms(int capacity, String location, List<String> features,
-                           double rating, int floor, LocalDateTime availableFrom, LocalDateTime availableTo);
-
+    /**
+     * Liefert alle Räume.
+     * @return Liste aller Räume
+     */
     List<Room> getAllRooms();
 
-    int getRoomId(String roomName);
+    /**
+     * Liefert einen Raum anhand seiner ID.
+     * @param roomId Die ID des Raumes.
+     * @return Der Raum, falls vorhanden, sonst null.
+     */
+    Room getRoomById(int roomId);
 
-    Room getRoomByName(String name);
+    /**
+     * Liefert einen Raum anhand seines Namens.
+     * @param roomName Der Name des Raumes.
+     * @return Der Raum, falls vorhanden, sonst null.
+     */
+    Room getRoomByName(String roomName);
+
+    /**
+     * Fügt einen neuen Raum der Datenbank hinzu.
+     * @param room Der einzufügende Raum.
+     */
+    void addRoom(Room room);
+
+    /**
+     * Löscht einen Raum anhand der Raum-ID.
+     * @param roomId Die ID des zu löschenden Raumes.
+     */
+    void deleteRoom(int roomId);
+
+    /**
+     * Sucht nach Räumen, die den angegebenen Kriterien entsprechen.
+     *
+     * @param capacity      Mindestkapazität des Raumes (0 = keine Einschränkung)
+     * @param location      Standort ("" = keine Einschränkung)
+     * @param features      Liste der gewünschten Features (leere Liste = keine Einschränkung)
+     * @param rating        Mindestrating (0.0 = keine Einschränkung)
+     * @param floor         Gewünschtes Stockwerk (0 = keine Einschränkung)
+     * @param availableFrom Frühester Zeitpunkt der Verfügbarkeit
+     * @param availableTo   Spätester Zeitpunkt der Verfügbarkeit
+     * @return Liste der Räume, die den Kriterien entsprechen.
+     */
+    List<Room> searchRooms(int capacity, String location, List<String> features,
+                           double rating, int floor, LocalDateTime availableFrom, LocalDateTime availableTo);
 }
