@@ -36,6 +36,25 @@ public class BookingDaoImpl implements BookingDao {
     private static final String SELECT_BOOKINGS_FOR_ROOM_ON_DATE_SQL =
             "SELECT * FROM bookings WHERE room_id = ? AND DATE(booking_start) = ?";
 
+
+    @Override
+    public List<Booking> getAllBookings() {
+        List<Booking> bookings = new ArrayList<>();
+        String sql = "SELECT * FROM bookings";
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    bookings.add(mapResultSetToBooking(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Fehler beim Abrufen aller Buchungen", e);
+        }
+        return bookings;
+    }
+
+
     @Override
     public List<Booking> getBookingsForRoomOnDate(int roomId, LocalDate date) {
         List<Booking> result = new ArrayList<>();
@@ -71,6 +90,7 @@ public class BookingDaoImpl implements BookingDao {
         } catch (SQLException e) {
             throw new RuntimeException("Fehler beim Abrufen von Buchungen nach Benutzer-ID", e);
         }
+        System.out.println("DEBUG: getBookingsByUserId(" + userId + ") liefert " + bookings.size() + " Buchungen.");
         return bookings;
     }
 
@@ -106,11 +126,11 @@ public class BookingDaoImpl implements BookingDao {
             ps.setString(6, status);
 
             ps.executeUpdate();
-            // Optional: abrufen der generierten Buchungs-ID
+            // Optional: Abruf der generierten Buchungs-ID
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     int bookingId = generatedKeys.getInt(1);
-                    // Hier kannst du bookingId verarbeiten oder einfach ignorieren
+                    // bookingId kann hier weiterverwendet oder geloggt werden
                 }
             }
         } catch (SQLException e) {

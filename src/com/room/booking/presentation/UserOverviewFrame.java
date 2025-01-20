@@ -2,10 +2,10 @@ package com.room.booking.presentation;
 
 import com.room.booking.dao.BookingDao;
 import com.room.booking.dao.BookingDaoImpl;
-import com.room.booking.dao.RoomDao;
-import com.room.booking.dao.RoomDaoImpl;
 import com.room.booking.dao.UserDao;
 import com.room.booking.dao.UserDaoImpl;
+import com.room.booking.dao.RoomDao;
+import com.room.booking.dao.RoomDaoImpl;
 import com.room.booking.model.Booking;
 import com.room.booking.model.Room;
 import com.room.booking.model.User;
@@ -14,117 +14,134 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class UserOverviewFrame extends JFrame {
 
     private User user;
     private BookingDao bookingDao;
+    private UserDao userDao; // Für Profilverwaltung
     private RoomDao roomDao;
-    private UserDao userDao;
-
     private JTable bookingTable;
     private DefaultTableModel tableModel;
+    private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     public UserOverviewFrame(User user) {
         this.user = user;
-        this.bookingDao = new BookingDaoImpl();
-        this.roomDao = new RoomDaoImpl();
-        this.userDao = new UserDaoImpl();
+        bookingDao = new BookingDaoImpl();
+        userDao = new UserDaoImpl();
+        roomDao = new RoomDaoImpl();
 
-        setTitle("Benutzerübersicht - Buchungen");
+        setTitle("Benutzerübersicht – Willkommen " + user.getFullName());
+        setSize(1100, 750);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // Größeres Fenster für besseren Überblick
-        setSize(950, 650);
         setLocationRelativeTo(null);
 
-        // Hauptpanel mit BorderLayout und Rand für Frische
-        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
-        contentPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        // Hauptpanel: BorderLayout mit großzügigen Rändern
+        JPanel contentPanel = new JPanel(new BorderLayout(10,10));
+        contentPanel.setBorder(new EmptyBorder(20,20,20,20));
         setContentPane(contentPanel);
 
-        // Kopfzeile: Begrüßung und Logo (optional)
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        JLabel headerLabel = new JLabel("Willkommen, " + user.getFullName());
-        headerLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        // Header
+        JLabel headerLabel = new JLabel("Ihr Buchungsdashboard");
+        headerLabel.setFont(new Font("SansSerif", Font.BOLD, 36));
         headerLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        headerPanel.add(headerLabel, BorderLayout.CENTER);
-        contentPanel.add(headerPanel, BorderLayout.NORTH);
+        contentPanel.add(headerLabel, BorderLayout.NORTH);
 
-        // Tabelle, um alle Buchungen anzuzeigen
-        tableModel = new DefaultTableModel(new Object[]{"Buchungs-ID", "Raum", "Start", "Ende", "Zweck", "Status"}, 0) {
+        // Tabelle zur Anzeige der Buchungen – Spalten: Raumname, Zeitraum, Zweck, Status
+        tableModel = new DefaultTableModel(new Object[]{"Raumname", "Zeitraum", "Zweck", "Status"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Keine direkte Bearbeitung in der Tabelle
+                return false;
             }
         };
         bookingTable = new JTable(tableModel);
-        bookingTable.setFont(new Font("Arial", Font.PLAIN, 14));
-        bookingTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        bookingTable.setRowHeight(25);
-        JScrollPane tableScroll = new JScrollPane(bookingTable);
-        contentPanel.add(tableScroll, BorderLayout.CENTER);
+        bookingTable.setRowHeight(30);
+        bookingTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 18));
+        bookingTable.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        JScrollPane tableScrollPane = new JScrollPane(bookingTable);
+        contentPanel.add(tableScrollPane, BorderLayout.CENTER);
 
-        // Laden der Buchungen in die Tabelle
-        loadBookingsIntoTable();
+        // Button-Panel im Footer
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 15));
 
-        // Fußzeile mit Buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 10));
-        // "Neue Buchung erstellen"
-        JButton createBookingButton = new JButton("Neue Buchung erstellen");
-        createBookingButton.setFont(new Font("Arial", Font.BOLD, 14));
-        createBookingButton.addActionListener(e -> {
+        JButton editBookingButton = new JButton("Buchung bearbeiten");
+        editBookingButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        editBookingButton.addActionListener((ActionEvent e) -> {
+            int selectedRow = bookingTable.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Bitte wählen Sie eine Buchung zum Bearbeiten aus.");
+            } else {
+                // Annahme: Die Reihenfolge in der Tabelle entspricht der Liste der Buchungen
+                List<Booking> bookings = bookingDao.getBookingsByUserId(user.getUserId());
+                Booking selectedBooking = bookings.get(selectedRow);
+                int bookingId = selectedBooking.getBookingId();
+                new BookingEditDialog(this, bookingId, user).setVisible(true);
+                refreshBookings();
+            }
+        });
+        buttonPanel.add(editBookingButton);
+
+        JButton deleteBookingButton = new JButton("Buchung löschen");
+        deleteBookingButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        deleteBookingButton.addActionListener((ActionEvent e) -> {
+            int selectedRow = bookingTable.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Bitte wählen Sie eine Buchung zum Löschen aus.");
+            } else {
+                List<Booking> bookings = bookingDao.getBookingsByUserId(user.getUserId());
+                Booking selectedBooking = bookings.get(selectedRow);
+                int bookingId = selectedBooking.getBookingId();
+                int confirm = JOptionPane.showConfirmDialog(this, "Buchung " + bookingId + " wirklich löschen?", "Bestätigung", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    bookingDao.deleteBooking(bookingId);
+                    JOptionPane.showMessageDialog(this, "Buchung gelöscht.");
+                    refreshBookings();
+                }
+            }
+        });
+        buttonPanel.add(deleteBookingButton);
+
+        JButton newBookingButton = new JButton("Neue Buchung erstellen");
+        newBookingButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        newBookingButton.addActionListener((ActionEvent e) -> {
             new AddBookingFrame(user).setVisible(true);
             dispose();
         });
-        // "Buchung bearbeiten/löschen"
-        JButton modifyBookingButton = new JButton("Buchung bearbeiten/löschen");
-        modifyBookingButton.setFont(new Font("Arial", Font.BOLD, 14));
-        modifyBookingButton.addActionListener(e -> {
-            int selectedRow = bookingTable.getSelectedRow();
-            if (selectedRow == -1) {
-                JOptionPane.showMessageDialog(this, "Bitte wählen Sie eine Buchung zum Bearbeiten oder Löschen aus.");
-            } else {
-                int bookingId = (Integer) tableModel.getValueAt(selectedRow, 0);
-                new BookingManagementDialog(this, bookingId, user).setVisible(true);
-                loadBookingsIntoTable(); // Tabelle nach Änderungen aktualisieren
-            }
+        buttonPanel.add(newBookingButton);
+
+        JButton editProfileButton = new JButton("Profil bearbeiten");
+        editProfileButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        editProfileButton.addActionListener((ActionEvent e) -> {
+            new ProfileManagementFrame(user).setVisible(true);
         });
-        // "Konto verwalten" (Aktualisieren/Löschen des Benutzerkontos)
-        JButton accountButton = new JButton("Konto verwalten");
-        accountButton.setFont(new Font("Arial", Font.BOLD, 14));
-        accountButton.addActionListener(e -> {
-            new AccountManagementFrame(user).setVisible(true);
-            // Optional: dispose() falls das Konto gelöscht wird.
-        });
-        // "Logout" Button – zurück zum Login
+        buttonPanel.add(editProfileButton);
+
         JButton logoutButton = new JButton("Logout");
-        logoutButton.setFont(new Font("Arial", Font.BOLD, 14));
-        logoutButton.addActionListener(e -> {
+        logoutButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        logoutButton.addActionListener((ActionEvent e) -> {
             new LoginFrame().setVisible(true);
             dispose();
         });
-
-        buttonPanel.add(createBookingButton);
-        buttonPanel.add(modifyBookingButton);
-        buttonPanel.add(accountButton);
         buttonPanel.add(logoutButton);
 
         contentPanel.add(buttonPanel, BorderLayout.SOUTH);
+        refreshBookings();
     }
 
-    private void loadBookingsIntoTable() {
+    private void refreshBookings() {
         tableModel.setRowCount(0);
         List<Booking> bookings = bookingDao.getBookingsByUserId(user.getUserId());
         for (Booking b : bookings) {
-            // Hole den Raumnamen über RoomDao, falls möglich
-            Room room = roomDao.getRoomById(b.getRoomId());
-            String roomName = (room != null) ? room.getRoomName() : "Unbekannt";
+            Room r = roomDao.getRoomById(b.getRoomId());
+            String roomName = (r != null) ? r.getRoomName() : "Unbekannt";
+            // Formatierung des Zeitraums: TT.MM.JJJJ HH:mm - HH:mm
+            String period = b.getStartTime().format(dtf) + " - " + b.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm"));
             Object[] row = {
-                    b.getBookingId(),
                     roomName,
-                    b.getStartTime(),
-                    b.getEndTime(),
+                    period,
                     b.getPurpose(),
                     b.getStatus()
             };
@@ -133,8 +150,7 @@ public class UserOverviewFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Testweise mit Dummy-Daten
-        User dummyUser = new User(1, "testuser", "Test User", "test@example.com", "password");
+        User dummyUser = new User(1, "alice", "Alice Doe", "alice@example.com", "passw0rd");
         SwingUtilities.invokeLater(() -> new UserOverviewFrame(dummyUser).setVisible(true));
     }
 }

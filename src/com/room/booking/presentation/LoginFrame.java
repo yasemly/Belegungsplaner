@@ -2,26 +2,27 @@ package com.room.booking.presentation;
 
 import com.room.booking.dao.UserDao;
 import com.room.booking.dao.UserDaoImpl;
+import com.room.booking.dao.EmployerDao;
+import com.room.booking.dao.EmployerDaoImpl;
 import com.room.booking.model.User;
+import com.room.booking.model.Employer;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-/**
- * GUI-Frame for logging in as a normal user (or for registering).
- */
 public class LoginFrame extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
 
     private UserDao userDao;
+    private EmployerDao employerDao;
 
     public LoginFrame() {
         userDao = new UserDaoImpl();
+        employerDao = new EmployerDaoImpl();
 
-        setTitle("Login Page");
+        setTitle("Login");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -29,26 +30,24 @@ public class LoginFrame extends JFrame {
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10,10,10,10);
+        gbc.insets = new Insets(10, 10, 10, 10);
 
-        JLabel userLabel = new JLabel("Username:");
+        JLabel userLabel = new JLabel("Benutzername:");
         gbc.gridx = 0;
         gbc.gridy = 0;
         add(userLabel, gbc);
 
         usernameField = new JTextField(20);
         gbc.gridx = 1;
-        gbc.gridy = 0;
         add(usernameField, gbc);
 
-        JLabel passLabel = new JLabel("Password:");
+        JLabel passLabel = new JLabel("Passwort:");
         gbc.gridx = 0;
         gbc.gridy = 1;
         add(passLabel, gbc);
 
         passwordField = new JPasswordField(20);
         gbc.gridx = 1;
-        gbc.gridy = 1;
         add(passwordField, gbc);
 
         JButton loginButton = new JButton("Login");
@@ -57,26 +56,19 @@ public class LoginFrame extends JFrame {
         gbc.gridwidth = 2;
         add(loginButton, gbc);
 
-        JButton registerButton = new JButton("Register");
+        JButton registerButton = new JButton("Registrieren");
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
         add(registerButton, gbc);
 
-        // Actions
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                attemptLogin();
-            }
+        loginButton.addActionListener((ActionEvent e) -> {
+            attemptLogin();
         });
 
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new RegistrationFrame().setVisible(true);
-                dispose();
-            }
+        registerButton.addActionListener((ActionEvent e) -> {
+            new RegistrationFrame().setVisible(true);
+            dispose();
         });
     }
 
@@ -84,21 +76,26 @@ public class LoginFrame extends JFrame {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
 
-        // Try to find user in "users" table
+        // Zunächst als normaler User prüfen
         User user = userDao.getUserByUsernameAndPassword(username, password);
         if (user != null) {
-            // Success => open user overview
             new UserOverviewFrame(user).setVisible(true);
             dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, "Invalid username or password.");
+            return;
         }
+
+        // Dann als Arbeitgeber prüfen
+        Employer employer = employerDao.getEmployerByUsernameAndPassword(username, password);
+        if (employer != null) {
+            new EmployerOverviewFrame(employer).setVisible(true);
+            dispose();
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this, "Ungültiger Benutzername oder Passwort.");
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            LoginFrame frame = new LoginFrame();
-            frame.setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
 }
